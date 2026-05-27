@@ -65,6 +65,32 @@ def get_resident_profile(resident_id: str):
         "vitals": vitals_data
     }
 
+# Endpoint: Get resident vital telemetry formatted as FHIR Observation Bundle
+@app.get("/api/residents/{resident_id}/fhir")
+def get_resident_fhir_bundle(resident_id: str):
+    profile = get_resident_details(resident_id)
+    if "error" in profile:
+        raise HTTPException(status_code=404, detail=profile["error"])
+        
+    vitals_data = get_resident_vitals(resident_id)
+    telemetry = vitals_data.get("telemetry", {})
+    
+    from tools.fhir_formatter import format_heart_rate_fhir, format_blood_pressure_fhir, format_gait_speed_fhir
+    
+    hr_obs = format_heart_rate_fhir(resident_id, telemetry.get("heart_rate_bpm", 72))
+    bp_obs = format_blood_pressure_fhir(resident_id, telemetry.get("bp_systolic", 120), telemetry.get("bp_diastolic", 80))
+    gait_obs = format_gait_speed_fhir(resident_id, telemetry.get("gait_speed_ms", 0.85))
+    
+    return {
+        "resourceType": "Bundle",
+        "type": "transaction",
+        "entry": [
+            {"resource": hr_obs},
+            {"resource": bp_obs},
+            {"resource": gait_obs}
+        ]
+    }
+
 # Endpoint: Trigger End-to-End Multi-Agent Health Check
 @app.post("/api/residents/{resident_id}/check")
 def trigger_agent_check(resident_id: str):
