@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SilverGrove | Ambient Assisted Living Multi-Agent System</title>
+    <!-- Google Fonts: Outfit & Inter for high-end modern typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <!-- Transparent Background Gradients -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <div class="portal-container">
+        <!-- HEADER -->
+        <header class="main-header glass-panel">
+            <div class="logo-area">
+                <div class="logo-icon">🌳</div>
+                <div class="logo-text">
+                    <h1>SilverGrove</h1>
+                    <p>Ambient Assisted Living Multi-Agent System</p>
+                </div>
+            </div>
+            <div class="status-bar">
+                <div class="status-indicator">
+                    <span class="pulse-dot"></span>
+                    <span class="status-label">Sensory Network: Active</span>
+                </div>
+                <button id="clear-btn" class="btn btn-secondary">Clear Alert Feed</button>
+            </div>
+        </header>
+
+        <!-- DASHBOARD GRID -->
+        <main class="dashboard-grid">
+            
+            <!-- LEFT PANEL: RESIDENT DIRECTORY -->
+            <section class="panel panel-left glass-panel">
+                <h2 class="panel-title">Resident Directory</h2>
+                <div id="residents-list" class="residents-list">
+                    <!-- Dynamic Resident Cards will be loaded here -->
+                    <div class="loading-spinner">Loading residents...</div>
+                </div>
+                
+                <div id="selected-resident-profile" class="profile-card glass-panel-inner hidden">
+                    <h3 class="profile-title">Martha Reynolds</h3>
+                    <div class="profile-meta">
+                        <div class="meta-item"><strong>Age:</strong> <span id="prof-age">82</span></div>
+                        <div class="meta-item"><strong>Conditions:</strong> <span id="prof-cond">Hypertension, Mild Cognitive Impairment</span></div>
+                    </div>
+                    <div class="profile-meds">
+                        <h4>Active Prescription Medications</h4>
+                        <ul id="prof-meds-list">
+                            <!-- Dynamic Meds List -->
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CENTER WORKSPACE: VITALS & AGENT WORKSPACE -->
+            <section class="workspace-panel">
+                
+                <!-- TOP WORKSPACE: GLOWING VITAL WIDGETS -->
+                <div class="vitals-container glass-panel">
+                    <div class="panel-header-with-btn">
+                        <h2 class="panel-title">Real-time Ambient Sensors</h2>
+                        <button id="trigger-check-btn" class="btn btn-primary">Run Multi-Agent Health Check</button>
+                    </div>
+                    
+                    <div class="vitals-grid">
+                        <!-- HR Card -->
+                        <div class="vital-card glass-panel-inner">
+                            <div class="vital-header">
+                                <span class="vital-icon">❤️</span>
+                                <span class="vital-name">Heart Rate</span>
+                            </div>
+                            <div class="vital-value"><span id="vital-hr">--</span> <span class="vital-unit">bpm</span></div>
+                            <div class="vital-footer">Baseline: <span id="base-hr">--</span> bpm</div>
+                        </div>
+
+                        <!-- BP Card -->
+                        <div class="vital-card glass-panel-inner" id="card-bp">
+                            <div class="vital-header">
+                                <span class="vital-icon">🩺</span>
+                                <span class="vital-name">Blood Pressure</span>
+                            </div>
+                            <div class="vital-value"><span id="vital-bp">--/--</span> <span class="vital-unit">mmHg</span></div>
+                            <div class="vital-footer" id="bp-deviation">Baseline: --/--</div>
+                        </div>
+
+                        <!-- Gait Speed Card -->
+                        <div class="vital-card glass-panel-inner" id="card-gait">
+                            <div class="vital-header">
+                                <span class="vital-icon">🚶‍♀️</span>
+                                <span class="vital-name">Gait Speed</span>
+                            </div>
+                            <div class="vital-value"><span id="vital-gait">--</span> <span class="vital-unit">m/s</span></div>
+                            <div class="vital-footer" id="gait-deviation">Baseline: -- m/s</div>
+                        </div>
+
+                        <!-- Sleep Card -->
+                        <div class="vital-card glass-panel-inner">
+                            <div class="vital-header">
+                                <span class="vital-icon">🌙</span>
+                                <span class="vital-name">Sleep Quality</span>
+                            </div>
+                            <div class="vital-value"><span id="vital-sleep">--</span> <span class="vital-unit">hrs</span></div>
+                            <div class="vital-footer">Baseline: <span id="base-sleep">--</span> hrs</div>
+                        </div>
+
+                        <!-- Occupancy Card -->
+                        <div class="vital-card glass-panel-inner">
+                            <div class="vital-header">
+                                <span class="vital-icon">📍</span>
+                                <span class="vital-name">Room Presence</span>
+                            </div>
+                            <div class="vital-value"><span id="vital-occupancy" class="occupancy-val">--</span></div>
+                            <div class="vital-footer">Ambient Radar tracking</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOTTOM WORKSPACE: MULTI-AGENT REASONING FLOW -->
+                <div class="agents-container glass-panel">
+                    <h2 class="panel-title">Multi-Agent Clinical Consensus Workspace</h2>
+                    
+                    <div class="agents-grid">
+                        <!-- Agent 1: Sensory Guardian -->
+                        <div class="agent-column glass-panel-inner" id="agent-sensory">
+                            <div class="agent-badge">
+                                <span class="agent-avatar">🛡️</span>
+                                <div class="agent-identity">
+                                    <h3>Sensory Guardian</h3>
+                                    <p class="agent-role">Telemetry Analyser</p>
+                                </div>
+                            </div>
+                            <div class="agent-status-label"><span class="status-pill status-waiting">Waiting</span></div>
+                            <div class="agent-output-box">
+                                <p class="placeholder-text">Waiting to ingest vital telemetry streams...</p>
+                            </div>
+                        </div>
+
+                        <!-- Agent 2: Medical Compliance -->
+                        <div class="agent-column glass-panel-inner" id="agent-compliance">
+                            <div class="agent-badge">
+                                <span class="agent-avatar">🔬</span>
+                                <div class="agent-identity">
+                                    <h3>Medical Compliance</h3>
+                                    <p class="agent-role">Pharmacological Correlator</p>
+                                </div>
+                            </div>
+                            <div class="agent-status-label"><span class="status-pill status-waiting">Waiting</span></div>
+                            <div class="agent-output-box">
+                                <p class="placeholder-text">Waiting for sensory anomaly escalation...</p>
+                            </div>
+                        </div>
+
+                        <!-- Agent 3: Cognitive Companion -->
+                        <div class="agent-column glass-panel-inner" id="agent-companion">
+                            <div class="agent-badge">
+                                <span class="agent-avatar">🤝</span>
+                                <div class="agent-identity">
+                                    <h3>Cognitive Companion</h3>
+                                    <p class="agent-role">Empathetic Care Interface</p>
+                                </div>
+                            </div>
+                            <div class="agent-status-label"><span class="status-pill status-waiting">Waiting</span></div>
+                            <div class="agent-output-box">
+                                <p class="placeholder-text">Waiting for clinical findings check-in draft...</p>
+                            </div>
+                        </div>
+
+                        <!-- Agent 4: Care Coordinator -->
+                        <div class="agent-column glass-panel-inner" id="agent-coordinator">
+                            <div class="agent-badge">
+                                <span class="agent-avatar">⚡</span>
+                                <div class="agent-identity">
+                                    <h3>Care Coordinator</h3>
+                                    <p class="agent-role">A2A Gateway Gateway</p>
+                                </div>
+                            </div>
+                            <div class="agent-status-label"><span class="status-pill status-waiting">Waiting</span></div>
+                            <div class="agent-output-box">
+                                <p class="placeholder-text">Waiting to dispatch A2A cryptographic alerts...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT PANEL: INTER-AGENT A2A PROTOCOL LOG -->
+            <section class="panel panel-right glass-panel">
+                <h2 class="panel-title">Outbound A2A Alerts Timeline</h2>
+                <div id="alerts-timeline" class="alerts-timeline">
+                    <!-- Dynamic Alerts Timeline will be loaded here -->
+                    <div class="no-alerts-placeholder">
+                        <span class="timeline-empty-icon">🔔</span>
+                        <p>No active alerts dispatched. System running in baseline safety thresholds.</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Alert Modal popup for instant alert notification -->
+    <div id="modal-alert" class="modal hidden">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <span class="modal-warning-icon">⚠️</span>
+                <h2>CRITICAL AGENT CONSENSUS DETECTED</h2>
+            </div>
+            <div class="modal-body">
+                <p id="modal-message"></p>
+                <div class="modal-correlation-box glass-panel-inner">
+                    <h4>Clinical Correlation</h4>
+                    <p id="modal-correlation"></p>
+                </div>
+                <div class="modal-actions-box">
+                    <h4>Required Action Interventions</h4>
+                    <ul id="modal-actions-list"></ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="modal-ack-btn" class="btn btn-primary">Acknowledge & Sign Alert</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="index.js"></script>
+</body>
+</html>

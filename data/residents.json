@@ -1,0 +1,72 @@
+{
+  "martha_001": {
+    "id": "martha_001",
+    "name": "Martha Reynolds",
+    "age": 78,
+    "conditions": ["Hypertension", "Type 2 Diabetes"],
+    "medications": [
+      {
+        "name": "Metoprolol Succinate",
+        "brand_name": "Toprol-XL",
+        "dose": "50mg",
+        "frequency": "Once daily",
+        "started_date": "2026-05-23",
+        "purpose": "High blood pressure / Heart rate control"
+      },
+      {
+        "name": "Lisinopril",
+        "brand_name": "Prinivil",
+        "dose": "10mg",
+        "frequency": "Once daily",
+        "started_date": "2026-01-15",
+        "purpose": "Hypertension management"
+      },
+      {
+        "name": "Metformin HCl",
+        "brand_name": "Glucophage",
+        "dose": "500mg",
+        "frequency": "Twice daily with meals",
+        "started_date": "2025-03-01",
+        "purpose": "Type 2 Diabetes glycemic control"
+      }
+    ],
+    "baselines": {
+      "heart_rate_bpm": 74,
+      "bp_systolic": 130,
+      "bp_diastolic": 80,
+      "gait_speed_ms": 0.85,
+      "sleep_hours": 7.2
+    }
+  },
+  "arthur_002": {
+    "id": "arthur_002",
+    "name": "Arthur Pendelton",
+    "age": 82,
+    "conditions": ["Early-Stage Alzheimer's", "Osteoarthritis"],
+    "medications": [
+      {
+        "name": "Donepezil HCl",
+        "brand_name": "Aricept",
+        "dose": "10mg",
+        "frequency": "Once daily at bedtime",
+        "started_date": "2025-11-10",
+        "purpose": "Cognitive symptoms of Alzheimer's"
+      },
+      {
+        "name": "Acetaminophen",
+        "brand_name": "Tylenol ER",
+        "dose": "650mg",
+        "frequency": "Every 8 hours as needed",
+        "started_date": "2024-08-05",
+        "purpose": "Joint pain management"
+      }
+    ],
+    "baselines": {
+      "heart_rate_bpm": 68,
+      "bp_systolic": 124,
+      "bp_diastolic": 76,
+      "gait_speed_ms": 0.65,
+      "sleep_hours": 6.8
+    }
+  }
+}
