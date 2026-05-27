@@ -37,7 +37,7 @@ def get_gait_trend_tool(resident_id: str) -> str:
     if "error" in res:
         return f"Error fetching gait history: {res['error']}"
     
-    history_str = " ➔ ".join([f"{speed} m/s" for speed in res["gait_speed_history_ms"]])
+    history_str = " -> ".join([f"{speed} m/s" for speed in res["gait_speed_history_ms"]])
     return (
         f"### 5-Day Gait Velocity Trend for {resident_id}\n"
         f"- **History:** {history_str}\n"

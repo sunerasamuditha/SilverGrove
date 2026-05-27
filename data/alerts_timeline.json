@@ -1,0 +1,17 @@
+[
+  {
+    "id": "alert_1779887644",
+    "timestamp": "2026-05-27T18:44:04.297358Z",
+    "resident_id": "arthur_002",
+    "resident_name": "Arthur Pendelton",
+    "severity": "WARNING",
+    "message": "Mild changes in vital signs and gait detected, prompting a companion check-in regarding potential dizziness and safety advice.",
+    "actions": [
+      "Ask about dizziness",
+      "Advise resident to stand slowly",
+      "Advise resident to drink water"
+    ],
+    "correlation": null,
+    "acknowledged": false
+  }
+]
