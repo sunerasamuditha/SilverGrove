@@ -1,6 +1,10 @@
 // SilverGrove Client Side Orchestrator
 let activeResidentId = null;
 
+function getApiBaseUrl() {
+    return localStorage.getItem("silvergrove_api_url") || "";
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     initResidents();
     initAlerts();
@@ -9,12 +13,75 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("trigger-check-btn").addEventListener("click", triggerAgentCheck);
     document.getElementById("clear-btn").addEventListener("click", clearAlertTimeline);
     document.getElementById("modal-ack-btn").addEventListener("click", closeModal);
+    
+    // Backend config listeners
+    document.getElementById("config-backend-btn").addEventListener("click", openConfigModal);
+    document.getElementById("config-close-btn").addEventListener("click", closeConfigModal);
+    document.getElementById("config-reset-btn").addEventListener("click", resetConfigToLocal);
+    document.getElementById("config-connect-btn").addEventListener("click", connectToBackend);
 });
+
+function openConfigModal() {
+    const input = document.getElementById("input-backend-url");
+    input.value = getApiBaseUrl();
+    document.getElementById("config-status").innerText = "";
+    document.getElementById("modal-config").classList.remove("hidden");
+}
+
+function closeConfigModal() {
+    document.getElementById("modal-config").classList.add("hidden");
+}
+
+function resetConfigToLocal() {
+    localStorage.removeItem("silvergrove_api_url");
+    document.getElementById("config-status").style.color = "var(--color-success)";
+    document.getElementById("config-status").innerText = "Switched to Localhost backend!";
+    setTimeout(() => {
+        closeConfigModal();
+        window.location.reload();
+    }, 1000);
+}
+
+async function connectToBackend() {
+    let url = document.getElementById("input-backend-url").value.trim();
+    if (!url) {
+        document.getElementById("config-status").style.color = "var(--color-danger)";
+        document.getElementById("config-status").innerText = "URL cannot be empty.";
+        return;
+    }
+    
+    // Standardize URL formatting
+    if (url.endsWith("/")) {
+        url = url.slice(0, -1);
+    }
+    
+    document.getElementById("config-status").style.color = "var(--color-info)";
+    document.getElementById("config-status").innerText = "Validating connection...";
+    
+    try {
+        const res = await fetch(url + "/api/residents");
+        if (res.ok) {
+            localStorage.setItem("silvergrove_api_url", url);
+            document.getElementById("config-status").style.color = "var(--color-success)";
+            document.getElementById("config-status").innerText = "Connected successfully!";
+            setTimeout(() => {
+                closeConfigModal();
+                window.location.reload();
+            }, 1000);
+        } else {
+            throw new Error("Endpoint returned status " + res.status);
+        }
+    } catch (err) {
+        document.getElementById("config-status").style.color = "var(--color-danger)";
+        document.getElementById("config-status").innerText = "Failed to connect. Ensure URL is correct and CORS is enabled.";
+        console.error(err);
+    }
+}
 
 // Load the Resident list into sidebar
 async function initResidents() {
     try {
-        const res = await fetch("/api/residents");
+        const res = await fetch(getApiBaseUrl() + "/api/residents");
         const residents = await res.json();
         
         const listContainer = document.getElementById("residents-list");
@@ -70,7 +137,7 @@ async function selectResident(residentId) {
     resetAgentWorkspace();
 
     try {
-        const res = await fetch(`/api/residents/${residentId}`);
+        const res = await fetch(getApiBaseUrl() + `/api/residents/${residentId}`);
         const data = await res.json();
         
         const p = data.profile;
@@ -164,7 +231,7 @@ async function triggerAgentCheck() {
     setAgentStatus("sensory", "Analyzing Vitals", "status-running");
     
     try {
-        const response = await fetch(`/api/residents/${activeResidentId}/check`, {
+        const response = await fetch(getApiBaseUrl() + `/api/residents/${activeResidentId}/check`, {
             method: "POST"
         });
         const trajectory = await response.json();
@@ -258,7 +325,7 @@ function closeModal() {
 // Fetch active outbound A2A alerts from timeline
 async function initAlerts() {
     try {
-        const res = await fetch("/api/alerts");
+        const res = await fetch(getApiBaseUrl() + "/api/alerts");
         const alerts = await res.json();
         
         const timeline = document.getElementById("alerts-timeline");
@@ -303,7 +370,7 @@ async function initAlerts() {
 async function clearAlertTimeline() {
     if (!confirm("Are you sure you want to clear the A2A alert log history?")) return;
     try {
-        await fetch("/api/alerts/clear", { method: "POST" });
+        await fetch(getApiBaseUrl() + "/api/alerts/clear", { method: "POST" });
         initAlerts();
     } catch (e) {
         console.error(e);

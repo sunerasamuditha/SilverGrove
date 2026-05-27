@@ -30,6 +30,7 @@
                     <span class="pulse-dot"></span>
                     <span class="status-label">Sensory Network: Active</span>
                 </div>
+                <button id="config-backend-btn" class="btn btn-secondary" style="margin-right: 8px;">🔗 Connect Backend</button>
                 <button id="clear-btn" class="btn btn-secondary">Clear Alert Feed</button>
             </div>
         </header>
@@ -226,6 +227,31 @@
             </div>
             <div class="modal-footer">
                 <button id="modal-ack-btn" class="btn btn-primary">Acknowledge & Sign Alert</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backend Config Modal -->
+    <div id="modal-config" class="modal hidden">
+        <div class="modal-content glass-panel" style="max-width: 450px;">
+            <div class="modal-header">
+                <span class="modal-warning-icon">🔗</span>
+                <h2>Connect Cloud Run Backend</h2>
+            </div>
+            <div class="modal-body" style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+                <p style="font-size: 13px; color: var(--color-text-muted);">
+                    Specify your Google Cloud Run API Gateway URL to securely connect this Cloudflare Pages frontend with your active agents.
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 11px; font-weight: 700; color: white; text-transform: uppercase;">Cloud Run Service URL:</label>
+                    <input type="text" id="input-backend-url" placeholder="https://silvergrove-a2a-xxxx-uc.a.run.app" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; color: white; font-family: monospace; font-size: 12px; outline: none; width: 100%;">
+                </div>
+                <div id="config-status" style="font-size: 11px; font-weight: 600; min-height: 16px;"></div>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; margin-top: 10px;">
+                <button id="config-reset-btn" class="btn btn-secondary">Use Localhost</button>
+                <button id="config-connect-btn" class="btn btn-primary">Connect Backend</button>
+                <button id="config-close-btn" class="btn btn-secondary">Close</button>
             </div>
         </div>
     </div>
