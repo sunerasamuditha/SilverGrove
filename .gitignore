@@ -19,6 +19,10 @@ __pycache__/
 *.pem
 credentials.json
 client_secret*.json
+silvergrove-a2a-*.json
+*.json.key
+gcp-key.json
+
 
 # OS files
 .DS_Store
