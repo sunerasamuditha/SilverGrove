@@ -540,7 +540,7 @@ async function initAlerts() {
                     <span class="alert-item-time">${timeStr}</span>
                 </div>
                 <div class="alert-item-msg">${alert.message}</div>
-                ${alert.correlation ? `<div class="alert-item-msg" style="color:#fda4af;font-size:11px;margin-top:4px;">[x] Correlation: ${alert.correlation.slice(0, 120)}...</div>` : ''}
+                ${alert.correlation ? `<div class="alert-item-msg" style="color:var(--color-danger);font-size:11px;margin-top:4px;font-weight:600;">[x] Correlation: ${alert.correlation.slice(0, 120)}...</div>` : ''}
                 <div class="alert-item-tag">A2A DISPATCHED</div>
             `;
             timeline.appendChild(item);
@@ -570,8 +570,8 @@ function formatMarkdown(text) {
         .replace(/\n/g, "<br>")
         .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
         .replace(/\*(.*?)\*/g, "<em>$1</em>")
-        .replace(/### (.*?)(<br>|$)/g, "<h4 style='font-family:Outfit,sans-serif;font-size:14px;margin:10px 0 6px;color:white;'>$1</h4>")
-        .replace(/## (.*?)(<br>|$)/g, "<h3 style='font-family:Outfit,sans-serif;font-size:16px;margin:14px 0 8px;color:white;'>$1</h3>");
+        .replace(/### (.*?)(<br>|$)/g, "<h4 style='font-family:Outfit,sans-serif;font-size:13px;margin:8px 0 4px;color:var(--color-text-primary);'>$1</h4>")
+        .replace(/## (.*?)(<br>|$)/g, "<h3 style='font-family:Outfit,sans-serif;font-size:15px;margin:12px 0 6px;color:var(--color-text-primary);'>$1</h3>");
 }
 
 function escapeHtml(text) {

@@ -17,11 +17,11 @@
 
     <div class="portal-container">
         <!-- HEADER -->
-        <header class="main-header glass-panel" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <header class="main-header glass-panel">
             <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
                 <div class="logo-area">
                     <div class="logo-icon" style="display: flex; align-items: center; justify-content: center;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00f2fe" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
                         </svg>
                     </div>
@@ -31,10 +31,10 @@
                     </div>
                 </div>
 
-                <nav class="nav-links" style="display: flex; gap: 0.8rem; align-items: center;">
-                    <a href="index.html" style="color: #00f2fe; text-decoration: none; font-size: 0.85rem; font-weight: 600; padding: 0.4rem 0.8rem; background: rgba(0, 242, 254, 0.08); border-radius: 6px;">Command Center</a>
-                    <a href="a2a-explorer.html" style="color: #94a3b8; text-decoration: none; font-size: 0.85rem; font-weight: 500; padding: 0.4rem 0.8rem; border-radius: 6px; transition: all 0.3s ease;">A2A Explorer</a>
-                    <a href="infographic.html" style="color: #94a3b8; text-decoration: none; font-size: 0.85rem; font-weight: 500; padding: 0.4rem 0.8rem; border-radius: 6px; transition: all 0.3s ease;">Scenario Infographic</a>
+                <nav class="nav-links">
+                    <a href="index.html" class="active">Command Center</a>
+                    <a href="a2a-explorer.html">A2A Explorer</a>
+                    <a href="infographic.html">Scenario Infographic</a>
                 </nav>
             </div>
 
@@ -43,7 +43,7 @@
                     <div class="connection-dot" id="conn-dot"></div>
                     <span id="conn-text">Checking...</span>
                 </div>
-                <button id="config-backend-btn" class="btn btn-secondary" style="display: flex; align-items: center; gap: 0.4rem;">
+                <button id="config-backend-btn" class="btn btn-secondary">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
                         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
@@ -320,7 +320,7 @@
     <div id="modal-config" class="modal hidden">
         <div class="modal-content glass-panel" style="max-width: 450px;">
             <div class="modal-header">
-                <span class="modal-warning-icon" style="display:flex;align-items:center;justify-content:center;color:#00f2fe;">
+                <span class="modal-warning-icon" style="display:flex;align-items:center;justify-content:center;color:var(--color-primary);">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
                         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
@@ -333,8 +333,8 @@
                     Specify your Google Cloud Run API Gateway URL to connect this frontend with your active agents.
                 </p>
                 <div style="display:flex;flex-direction:column;gap:6px;">
-                    <label style="font-size:11px;font-weight:700;color:white;text-transform:uppercase;">Cloud Run Service URL:</label>
-                    <input type="text" id="input-backend-url" placeholder="https://silvergrove-a2a-xxxx-uc.a.run.app" style="background:rgba(0,0,0,0.3);border:1px solid var(--border-color);border-radius:8px;padding:10px;color:white;font-family:monospace;font-size:12px;outline:none;width:100%;">
+                    <label style="font-size:11px;font-weight:700;color:var(--color-text-primary);text-transform:uppercase;">Cloud Run Service URL:</label>
+                    <input type="text" id="input-backend-url" placeholder="https://silvergrove-a2a-xxxx-uc.a.run.app" style="background:var(--panel-inner);border:1px solid var(--border-color);border-radius:4px;padding:10px;color:var(--color-text-primary);font-family:monospace;font-size:12px;outline:none;width:100%;">
                 </div>
                 <div id="config-status" style="font-size:11px;font-weight:600;min-height:16px;"></div>
             </div>
