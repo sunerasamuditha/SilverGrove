@@ -1,5 +1,23 @@
 [
   {
+    "id": "alert_1780054121",
+    "timestamp": "2026-05-29T16:58:41.784198Z",
+    "resident_id": "clara_003",
+    "resident_name": "Clara Higgins",
+    "severity": "WARNING",
+    "message": "Resident experiencing significant gait slowdown and hypotensive vital readings. Correlation analysis suggests symptoms are linked to recent Carbidopa-Levodopa initiation. High risk for falls; intervention required.",
+    "actions": [
+      "Immediate caregiver wellness check",
+      "Perform orthostatic vitals assessment (supine/sitting/standing)",
+      "Monitor for gait freezing/falls",
+      "Hydrate",
+      "Sit for 60 seconds before standing",
+      "Escalate to PCP for medication review of Carbidopa-Levodopa"
+    ],
+    "correlation": "Recent initiation of Carbidopa-Levodopa (2026-05-24) correlates with observed symptomatic hypotension (98/60 mmHg) and gait degradation (-27.6% speed). No interaction with Midodrine detected.",
+    "acknowledged": false
+  },
+  {
     "id": "alert_1780050352",
     "timestamp": "2026-05-29T15:55:52.323686Z",
     "resident_id": "martha_001",
