@@ -465,33 +465,79 @@ function applyLogFilter() {
 // ============================================================
 
 function triggerModalAlert() {
-    const complianceText = liveTrajectory.medical_compliance.output;
-    const companionText = liveTrajectory.cognitive_companion.output;
+    const complianceText = liveTrajectory.medical_compliance.output || "";
+    const companionText = liveTrajectory.cognitive_companion.output || "";
+    const sensoryText = liveTrajectory.sensory_guardian.output || "";
 
     // Only show modal if we have real data
     if (!complianceText && !companionText) return;
 
+    // 1. Dynamic Anomaly Extraction
+    let observedAnomaly = "Ambient telemetry detected significant vitals deviation from baseline thresholds.";
+    if (sensoryText) {
+        const anomalyMatch = sensoryText.match(/\*\*(?:Observed Anomaly|Anomaly Description|Observed Anomaly Description).*?\*\*[:\s]+(.*?)(?=\n-|$)/is);
+        if (anomalyMatch && anomalyMatch[1]) {
+            observedAnomaly = anomalyMatch[1].trim();
+        } else {
+            const lines = sensoryText.split('\n');
+            const anomalyLine = lines.find(l => l.includes('Anomaly') && (l.includes('speed') || l.includes('pressure') || l.includes('sleep')));
+            if (anomalyLine) observedAnomaly = anomalyLine.replace(/^[-* ]*(.*?:)?\s*/i, '').trim();
+        }
+    }
+
     document.getElementById("modal-message").innerHTML = `
-        <strong>Observed Anomaly:</strong> Ambient camera-free telemetry detected critical gait speed velocity slowdown and blood pressure shifts for the resident.<br><br>
-        <strong>Empathy Guidance:</strong> "${escapeHtml(companionText)}"
+        <strong>Observed Anomaly:</strong> ${escapeHtml(observedAnomaly).replace(/\*\*/g, '')}<br><br>
+        <strong>Empathy Guidance:</strong> "${escapeHtml(companionText).replace(/\*\*/g, '')}"
     `;
 
+    // 2. Dynamic Correlation Findings
     let interaction = "Hypotensive risks associated with medication introduction. Advise standing slowly, hydration, and observation.";
-    if (complianceText.includes("lisinopril") || complianceText.includes("Lisinopril")) {
-        interaction = "Dangerous drug-drug interactions between Metoprolol and Lisinopril. High risk of orthostatic hypotension and fall accidents.";
-    } else if (complianceText.includes("Sinemet") || complianceText.includes("Levodopa")) {
-        interaction = "Parkinsonian motor fluctuations and freezing of gait triggered by Sinemet (Carbidopa-Levodopa) dosage introduction. High fall risk.";
-    } else if (complianceText.includes("Oxycodone")) {
-        interaction = "CNS depression and postural instability triggered by post-op Oxycodone opioid administration. High somnolence and fall risk.";
+    if (complianceText) {
+        const findingsMatch = complianceText.match(/\*\*Correlation Findings.*?\*\*[:\s]+(.*?)(?=\n-|$)/is);
+        if (findingsMatch && findingsMatch[1]) {
+            interaction = findingsMatch[1].trim();
+        } else {
+            const lines = complianceText.split('\n');
+            const findLine = lines.find(l => l.includes('Findings') || l.includes('Correlation'));
+            if (findLine) {
+                interaction = findLine.replace(/^[-* ]*(.*?:)?\s*/i, '').trim();
+            } else {
+                interaction = complianceText.substring(0, 300) + "...";
+            }
+        }
     }
-    document.getElementById("modal-correlation").innerText = interaction;
+    document.getElementById("modal-correlation").innerText = interaction.replace(/\*\*/g, '');
 
-    document.getElementById("modal-actions-list").innerHTML = `
+    // 3. Dynamic Action Interventions
+    let actionsHtml = `
         <li>[!] Guide resident to hydrate immediately and stand up slowly</li>
         <li>[!] Notify family representative agent over active A2A node</li>
         <li>[!] Request primary care physician review pharmacological dosages</li>
     `;
+    
+    if (complianceText) {
+        const advisoryMatch = complianceText.match(/\*\*Geriatric Advisory.*?\*\*[:\s]+(.*?)(?=\n-|$)/is);
+        const actionsMatch = complianceText.match(/\*\*Recommended Care Actions.*?\*\*[:\s]+(.*?)(?=\n-|$)/is);
+        
+        let advices = [];
+        if (advisoryMatch && advisoryMatch[1]) {
+            let sentences = advisoryMatch[1].split('. ').filter(s => s.trim().length > 0);
+            advices.push(...sentences);
+        }
+        if (actionsMatch && actionsMatch[1]) {
+            advices.push(actionsMatch[1]);
+        }
+        
+        if (advices.length > 0) {
+            actionsHtml = advices.map(a => {
+                let text = a.trim().replace(/\*\*/g, '');
+                if (!text.endsWith('.')) text += '.';
+                return `<li>[!] ${escapeHtml(text)}</li>`;
+            }).join('');
+        }
+    }
 
+    document.getElementById("modal-actions-list").innerHTML = actionsHtml;
     document.getElementById("modal-alert").classList.remove("hidden");
 }
 
