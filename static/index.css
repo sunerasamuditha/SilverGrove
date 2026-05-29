@@ -675,7 +675,7 @@ h1, h2, h3, h4 {
 
 /* HELPER UTILITIES */
 .hidden {
-    display: none !hidden !important;
+    display: none !important;
     opacity: 0;
     pointer-events: none;
     visibility: hidden;
@@ -734,4 +734,291 @@ h1, h2, h3, h4 {
         transform: scale(1);
         opacity: 1;
     }
+}
+
+/* ==========================================================================
+   EMBEDDED TERMINAL CONSOLE (Right Panel)
+   ========================================================================== */
+
+.terminal-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.terminal-tab-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.terminal-tab {
+    padding: 10px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    color: var(--color-text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.terminal-tab:hover {
+    color: var(--color-text-secondary);
+}
+
+.terminal-tab.active {
+    color: #00f2fe;
+    border-bottom-color: #00f2fe;
+}
+
+.terminal-tab-content {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+.terminal-tab-content.active {
+    display: flex;
+}
+
+.terminal-header-bar {
+    background: rgba(5, 7, 12, 0.6);
+    padding: 8px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.terminal-dots {
+    display: flex;
+    gap: 5px;
+}
+
+.t-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.t-dot.red { background: #ef4444; }
+.t-dot.yellow { background: #f59e0b; }
+.t-dot.green { background: #10b981; }
+
+.terminal-status-text {
+    font-family: 'Inter', monospace;
+    font-size: 10px;
+    color: var(--color-text-muted);
+    letter-spacing: 0.03em;
+}
+
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 8px 14px;
+    background: rgba(5, 7, 12, 0.4);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    flex-shrink: 0;
+}
+
+.filter-chip {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--color-text-muted);
+    border-radius: 14px;
+    padding: 2px 8px;
+    font-size: 9px;
+    font-weight: 600;
+    font-family: 'Inter', monospace;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+}
+
+.filter-chip:hover,
+.filter-chip.active {
+    border-color: #00f2fe;
+    color: #00f2fe;
+    background: rgba(0, 242, 254, 0.05);
+}
+
+.terminal-logs {
+    flex: 1;
+    padding: 10px 14px;
+    overflow-y: auto;
+    font-family: 'Inter', monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: rgba(2, 4, 8, 0.5);
+}
+
+.log-row {
+    display: flex;
+    gap: 8px;
+    border-radius: 3px;
+    padding: 2px 4px;
+    transition: background 0.15s ease;
+    align-items: flex-start;
+}
+
+.log-row:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.log-time {
+    color: var(--color-text-muted);
+    min-width: 72px;
+    flex-shrink: 0;
+    font-size: 10px;
+}
+
+.log-agent {
+    font-weight: 700;
+    min-width: 100px;
+    flex-shrink: 0;
+    font-size: 10px;
+}
+
+.log-event {
+    color: #00f2fe;
+    min-width: 80px;
+    flex-shrink: 0;
+    font-size: 10px;
+}
+
+.log-msg {
+    color: var(--color-text-secondary);
+    flex: 1;
+    word-break: break-word;
+    white-space: pre-wrap;
+    font-size: 10px;
+}
+
+.log-data-block {
+    margin-top: 3px;
+    padding: 5px 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    font-size: 9px;
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    color: var(--color-text-muted);
+    max-height: 80px;
+    overflow-y: auto;
+}
+
+/* Agent color coding */
+.agent-ORCHESTRATOR { color: #f59e0b; }
+.agent-SENSORY_GUARDIAN { color: #3b82f6; }
+.agent-MEDICAL_COMPLIANCE { color: #ec4899; }
+.agent-COGNITIVE_COMPANION { color: #10b981; }
+.agent-CARE_COORDINATOR { color: #8b5cf6; }
+
+/* ==========================================================================
+   EMPATHY DIALOGUE SECTION
+   ========================================================================== */
+
+.empathy-section {
+    flex-shrink: 0;
+    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.empathy-bubble {
+    background: rgba(16, 185, 129, 0.06);
+    border: 1px solid rgba(16, 185, 129, 0.15);
+    border-radius: 14px 14px 14px 4px;
+    padding: 16px 20px;
+    position: relative;
+    animation: fadeIn 0.5s ease;
+}
+
+.empathy-bubble::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -6px;
+    width: 12px;
+    height: 12px;
+    background: rgba(16, 185, 129, 0.06);
+    border-left: 1px solid rgba(16, 185, 129, 0.15);
+    border-bottom: 1px solid rgba(16, 185, 129, 0.15);
+    border-radius: 0 0 0 8px;
+    clip-path: polygon(100% 0, 0 100%, 100% 100%);
+}
+
+.empathy-speaker {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.empathy-speaker-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+}
+
+.empathy-speaker-name {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #10b981;
+}
+
+.empathy-text {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+    font-style: italic;
+}
+
+.empathy-placeholder {
+    text-align: center;
+    padding: 12px;
+    color: var(--color-text-muted);
+    font-size: 12px;
+    font-style: italic;
+}
+
+/* Connection status badge */
+.connection-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--color-text-muted);
+}
+
+.connection-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ef4444;
+}
+
+.connection-dot.online {
+    background: #10b981;
+    box-shadow: 0 0 6px #10b981;
 }

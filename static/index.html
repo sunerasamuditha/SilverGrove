@@ -4,20 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SilverGrove | Ambient Assisted Living Multi-Agent System</title>
-    <!-- Google Fonts: Outfit & Inter for high-end modern typography -->
+    <meta name="description" content="Privacy-first ambient assisted living multi-agent clinical consensus system powered by Google ADK and Gemini 2.5 Flash.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="index.css">
-    <style>
-      .nav-links a:hover {
-        color: #00f2fe !important;
-        background: rgba(0, 242, 254, 0.05) !important;
-      }
-    </style>
 </head>
 <body>
-    <!-- Transparent Background Gradients -->
+    <!-- Background Gradients -->
     <div class="bg-glow bg-glow-1"></div>
     <div class="bg-glow bg-glow-2"></div>
 
@@ -36,72 +30,68 @@
                         <p>Ambient Assisted Living Multi-Agent System</p>
                     </div>
                 </div>
-                
+
                 <nav class="nav-links" style="display: flex; gap: 0.8rem; align-items: center;">
-                    <a href="index.html" class="nav-link active" style="color: #00f2fe; text-decoration: none; font-size: 0.85rem; font-weight: 600; padding: 0.4rem 0.8rem; background: rgba(0, 242, 254, 0.08); border-radius: 6px; transition: all 0.3s ease;">Portal Dashboard</a>
-                    <a href="console.html" class="nav-link" style="color: #94a3b8; text-decoration: none; font-size: 0.85rem; font-weight: 500; padding: 0.4rem 0.8rem; border-radius: 6px; transition: all 0.3s ease;">Mission Control Console</a>
-                    <a href="a2a-explorer.html" class="nav-link" style="color: #94a3b8; text-decoration: none; font-size: 0.85rem; font-weight: 500; padding: 0.4rem 0.8rem; border-radius: 6px; transition: all 0.3s ease;">A2A Explorer</a>
-                    <a href="infographic.html" class="nav-link" style="color: #94a3b8; text-decoration: none; font-size: 0.85rem; font-weight: 500; padding: 0.4rem 0.8rem; border-radius: 6px; transition: all 0.3s ease;">Scenario Infographic</a>
+                    <a href="index.html" style="color: #00f2fe; text-decoration: none; font-size: 0.85rem; font-weight: 600; padding: 0.4rem 0.8rem; background: rgba(0, 242, 254, 0.08); border-radius: 6px;">Command Center</a>
+                    <a href="a2a-explorer.html" style="color: #94a3b8; text-decoration: none; font-size: 0.85rem; font-weight: 500; padding: 0.4rem 0.8rem; border-radius: 6px; transition: all 0.3s ease;">A2A Explorer</a>
+                    <a href="infographic.html" style="color: #94a3b8; text-decoration: none; font-size: 0.85rem; font-weight: 500; padding: 0.4rem 0.8rem; border-radius: 6px; transition: all 0.3s ease;">Scenario Infographic</a>
                 </nav>
             </div>
-            
+
             <div class="status-bar">
-                <div class="status-indicator">
-                    <span class="pulse-dot"></span>
-                    <span class="status-label">Sensory Network: Active</span>
+                <div class="connection-badge" id="conn-badge">
+                    <div class="connection-dot" id="conn-dot"></div>
+                    <span id="conn-text">Checking...</span>
                 </div>
-                <button id="config-backend-btn" class="btn btn-secondary" style="margin-right: 8px; display: flex; align-items: center; gap: 0.4rem;">
+                <button id="config-backend-btn" class="btn btn-secondary" style="display: flex; align-items: center; gap: 0.4rem;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
                         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
                     </svg>
                     Connect Backend
                 </button>
-                <button id="clear-btn" class="btn btn-secondary">Clear Alert Feed</button>
+                <button id="clear-btn" class="btn btn-secondary">Clear Alerts</button>
             </div>
         </header>
 
-        <!-- DASHBOARD GRID -->
+        <!-- MAIN DASHBOARD GRID -->
         <main class="dashboard-grid">
-            
+
             <!-- LEFT PANEL: RESIDENT DIRECTORY -->
             <section class="panel panel-left glass-panel">
                 <h2 class="panel-title">Resident Directory</h2>
                 <div id="residents-list" class="residents-list">
-                    <!-- Dynamic Resident Cards will be loaded here -->
                     <div class="loading-spinner">Loading residents...</div>
                 </div>
-                
+
                 <div id="selected-resident-profile" class="profile-card glass-panel-inner hidden">
-                    <h3 class="profile-title" id="prof-name">Martha Reynolds</h3>
+                    <h3 class="profile-title" id="prof-name"></h3>
                     <div class="profile-meta">
-                        <div class="meta-item"><strong>Age:</strong> <span id="prof-age">82</span></div>
-                        <div class="meta-item"><strong>Conditions:</strong> <span id="prof-cond">Hypertension, Mild Cognitive Impairment</span></div>
+                        <div class="meta-item"><strong>Age:</strong> <span id="prof-age"></span></div>
+                        <div class="meta-item"><strong>Conditions:</strong> <span id="prof-cond"></span></div>
                     </div>
                     <div class="profile-meds">
                         <h4>Active Prescription Medications</h4>
-                        <ul id="prof-meds-list">
-                            <!-- Dynamic Meds List -->
-                        </ul>
+                        <ul id="prof-meds-list"></ul>
                     </div>
                 </div>
             </section>
 
-            <!-- CENTER WORKSPACE: VITALS & AGENT WORKSPACE -->
+            <!-- CENTER WORKSPACE: VITALS + AGENT WORKSPACE + EMPATHY DIALOGUE -->
             <section class="workspace-panel">
-                
-                <!-- TOP WORKSPACE: GLOWING VITAL WIDGETS -->
+
+                <!-- TOP: VITAL SENSOR WIDGETS -->
                 <div class="vitals-container glass-panel">
                     <div class="panel-header-with-btn">
                         <h2 class="panel-title">Real-time Ambient Sensors</h2>
                         <button id="trigger-check-btn" class="btn btn-primary">Run Multi-Agent Health Check</button>
                     </div>
-                    
+
                     <div class="vitals-grid">
-                        <!-- HR Card -->
+                        <!-- Heart Rate -->
                         <div class="vital-card glass-panel-inner">
                             <div class="vital-header">
-                                <span class="vital-icon" style="display: flex; align-items: center; justify-content: center; color: #ef4444;">
+                                <span class="vital-icon" style="display:flex;align-items:center;justify-content:center;color:#ef4444;">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                                         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
                                     </svg>
@@ -112,13 +102,11 @@
                             <div class="vital-footer">Baseline: <span id="base-hr">--</span> bpm</div>
                         </div>
 
-                        <!-- BP Card -->
+                        <!-- Blood Pressure -->
                         <div class="vital-card glass-panel-inner" id="card-bp">
                             <div class="vital-header">
-                                <span class="vital-icon" style="display: flex; align-items: center; justify-content: center; color: #00f2fe;">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
-                                    </svg>
+                                <span class="vital-icon" style="display:flex;align-items:center;justify-content:center;color:#00f2fe;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
                                 </span>
                                 <span class="vital-name">Blood Pressure</span>
                             </div>
@@ -126,11 +114,11 @@
                             <div class="vital-footer" id="bp-deviation">Baseline: --/--</div>
                         </div>
 
-                        <!-- Gait Speed Card -->
+                        <!-- Gait Speed -->
                         <div class="vital-card glass-panel-inner" id="card-gait">
                             <div class="vital-header">
-                                <span class="vital-icon" style="display: flex; align-items: center; justify-content: center; color: #a5b4fc;">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <span class="vital-icon" style="display:flex;align-items:center;justify-content:center;color:#a5b4fc;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                         <circle cx="12" cy="5" r="1"></circle>
                                         <path d="m10.5 8 1 1.5 2-1"></path>
                                         <path d="M12 10v4h2"></path>
@@ -144,13 +132,11 @@
                             <div class="vital-footer" id="gait-deviation">Baseline: -- m/s</div>
                         </div>
 
-                        <!-- Sleep Card -->
+                        <!-- Sleep Quality -->
                         <div class="vital-card glass-panel-inner">
                             <div class="vital-header">
-                                <span class="vital-icon" style="display: flex; align-items: center; justify-content: center; color: #fbbf24;">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                                    </svg>
+                                <span class="vital-icon" style="display:flex;align-items:center;justify-content:center;color:#fbbf24;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
                                 </span>
                                 <span class="vital-name">Sleep Quality</span>
                             </div>
@@ -158,11 +144,11 @@
                             <div class="vital-footer">Baseline: <span id="base-sleep">--</span> hrs</div>
                         </div>
 
-                        <!-- Occupancy Card -->
+                        <!-- Room Presence -->
                         <div class="vital-card glass-panel-inner">
                             <div class="vital-header">
-                                <span class="vital-icon" style="display: flex; align-items: center; justify-content: center; color: #10b981;">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <span class="vital-icon" style="display:flex;align-items:center;justify-content:center;color:#10b981;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                                         <circle cx="12" cy="10" r="3"></circle>
                                     </svg>
@@ -175,108 +161,124 @@
                     </div>
                 </div>
 
-                <!-- BOTTOM WORKSPACE: MULTI-AGENT REASONING FLOW -->
+                <!-- MID: MULTI-AGENT CONSENSUS WORKSPACE -->
                 <div class="agents-container glass-panel">
                     <h2 class="panel-title">Multi-Agent Clinical Consensus Workspace</h2>
-                    
                     <div class="agents-grid">
                         <!-- Agent 1: Sensory Guardian -->
                         <div class="agent-column glass-panel-inner" id="agent-sensory">
                             <div class="agent-badge">
-                                <span class="agent-avatar" style="display: flex; align-items: center; justify-content: center; color: #3b82f6;">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                                    </svg>
+                                <span class="agent-avatar" style="display:flex;align-items:center;justify-content:center;color:#3b82f6;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
                                 </span>
-                                <div class="agent-identity">
-                                    <h3>Sensory Guardian</h3>
-                                    <p class="agent-role">Telemetry Analyser</p>
-                                </div>
+                                <div class="agent-identity"><h3>Sensory Guardian</h3><p class="agent-role">Telemetry Analyser</p></div>
                             </div>
                             <div class="agent-status-label"><span class="status-pill status-waiting">Waiting</span></div>
-                            <div class="agent-output-box">
-                                <p class="placeholder-text">Waiting to ingest vital telemetry streams...</p>
-                            </div>
+                            <div class="agent-output-box"><p class="placeholder-text">Waiting to ingest vital telemetry streams...</p></div>
                         </div>
 
                         <!-- Agent 2: Medical Compliance -->
                         <div class="agent-column glass-panel-inner" id="agent-compliance">
                             <div class="agent-badge">
-                                <span class="agent-avatar" style="display: flex; align-items: center; justify-content: center; color: #ec4899;">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M4.5 16.5c-1.5 1.26-2 3-2 3s4.5.5 6-1.5"></path>
-                                        <path d="M13.5 7.5l-9 9"></path>
-                                        <path d="M19.5 9.5c1.5-1.26 2-3 2-3s-4.5-.5-6 1.5"></path>
-                                        <path d="M10.5 16.5l9-9"></path>
-                                    </svg>
+                                <span class="agent-avatar" style="display:flex;align-items:center;justify-content:center;color:#ec4899;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
                                 </span>
-                                <div class="agent-identity">
-                                    <h3>Medical Compliance</h3>
-                                    <p class="agent-role">Pharmacological Correlator</p>
-                                </div>
+                                <div class="agent-identity"><h3>Medical Compliance</h3><p class="agent-role">Pharmacological Correlator</p></div>
                             </div>
                             <div class="agent-status-label"><span class="status-pill status-waiting">Waiting</span></div>
-                            <div class="agent-output-box">
-                                <p class="placeholder-text">Waiting for sensory anomaly escalation...</p>
-                            </div>
+                            <div class="agent-output-box"><p class="placeholder-text">Waiting for sensory anomaly escalation...</p></div>
                         </div>
 
                         <!-- Agent 3: Cognitive Companion -->
                         <div class="agent-column glass-panel-inner" id="agent-companion">
                             <div class="agent-badge">
-                                <span class="agent-avatar" style="display: flex; align-items: center; justify-content: center; color: #10b981;">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                                    </svg>
+                                <span class="agent-avatar" style="display:flex;align-items:center;justify-content:center;color:#10b981;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                                 </span>
-                                <div class="agent-identity">
-                                    <h3>Cognitive Companion</h3>
-                                    <p class="agent-role">Empathetic Care Interface</p>
-                                </div>
+                                <div class="agent-identity"><h3>Cognitive Companion</h3><p class="agent-role">Empathetic Care Interface</p></div>
                             </div>
                             <div class="agent-status-label"><span class="status-pill status-waiting">Waiting</span></div>
-                            <div class="agent-output-box">
-                                <p class="placeholder-text">Waiting for clinical findings check-in draft...</p>
-                            </div>
+                            <div class="agent-output-box"><p class="placeholder-text">Waiting for clinical findings check-in draft...</p></div>
                         </div>
 
                         <!-- Agent 4: Care Coordinator -->
                         <div class="agent-column glass-panel-inner" id="agent-coordinator">
                             <div class="agent-badge">
-                                <span class="agent-avatar" style="display: flex; align-items: center; justify-content: center; color: #8b5cf6;">
+                                <span class="agent-avatar" style="display:flex;align-items:center;justify-content:center;color:#8b5cf6;">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
                                         <polyline points="2 17 12 22 22 17"></polyline>
                                         <polyline points="2 12 12 17 22 12"></polyline>
                                     </svg>
                                 </span>
-                                <div class="agent-identity">
-                                    <h3>Care Coordinator</h3>
-                                    <p class="agent-role">A2A Gateway</p>
-                                </div>
+                                <div class="agent-identity"><h3>Care Coordinator</h3><p class="agent-role">A2A Gateway</p></div>
                             </div>
                             <div class="agent-status-label"><span class="status-pill status-waiting">Waiting</span></div>
-                            <div class="agent-output-box">
-                                <p class="placeholder-text">Waiting to dispatch A2A cryptographic alerts...</p>
-                            </div>
+                            <div class="agent-output-box"><p class="placeholder-text">Waiting to dispatch A2A cryptographic alerts...</p></div>
                         </div>
                     </div>
                 </div>
-            </main>
 
-            <!-- RIGHT PANEL: INTER-AGENT A2A PROTOCOL LOG -->
-            <section class="panel panel-right glass-panel">
-                <h2 class="panel-title">Outbound A2A Alerts Timeline</h2>
-                <div id="alerts-timeline" class="alerts-timeline">
-                    <!-- Dynamic Alerts Timeline will be loaded here -->
-                    <div class="no-alerts-placeholder">
-                        <span class="timeline-empty-icon" style="display: flex; align-items: center; justify-content: center; color: #475569; margin-bottom: 0.8rem;">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                            </svg>
-                        </span>
-                        <p>No active alerts dispatched. System running in baseline safety thresholds.</p>
+                <!-- BOTTOM: EMPATHY DIALOGUE -->
+                <div class="glass-panel empathy-section" id="empathy-section">
+                    <h2 class="panel-title">Cognitive Companion Dialogue</h2>
+                    <div id="empathy-content">
+                        <p class="empathy-placeholder">The Cognitive Companion will speak here after the clinical consensus completes. This is the actual AI-generated empathetic check-in message addressed directly to the resident.</p>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- RIGHT PANEL: EMBEDDED TERMINAL + ALERTS TABS -->
+            <section class="panel panel-right glass-panel" style="padding: 0; overflow: hidden;">
+                <div class="terminal-wrapper">
+                    <!-- Tab Bar -->
+                    <div class="terminal-tab-bar">
+                        <button class="terminal-tab active" data-tab="terminal">Mission Control</button>
+                        <button class="terminal-tab" data-tab="alerts">A2A Alert Log</button>
+                    </div>
+
+                    <!-- TAB 1: LIVE TERMINAL -->
+                    <div class="terminal-tab-content active" id="tab-terminal">
+                        <div class="terminal-header-bar">
+                            <div class="terminal-dots">
+                                <div class="t-dot red"></div>
+                                <div class="t-dot yellow"></div>
+                                <div class="t-dot green"></div>
+                            </div>
+                            <span class="terminal-status-text" id="terminal-status">silvergrove://idle</span>
+                        </div>
+                        <div class="filter-bar">
+                            <button class="filter-chip active" data-filter="all">ALL</button>
+                            <button class="filter-chip" data-filter="ORCHESTRATOR">ORCH</button>
+                            <button class="filter-chip" data-filter="SENSORY_GUARDIAN">SENSORY</button>
+                            <button class="filter-chip" data-filter="MEDICAL_COMPLIANCE">MEDICAL</button>
+                            <button class="filter-chip" data-filter="COGNITIVE_COMPANION">COMPANION</button>
+                            <button class="filter-chip" data-filter="CARE_COORDINATOR">COORD</button>
+                        </div>
+                        <div class="terminal-logs" id="terminal-logs">
+                            <div class="log-row">
+                                <span class="log-time">--:--:--</span>
+                                <span class="log-agent" style="color: var(--color-text-muted);">SYSTEM</span>
+                                <span class="log-event" style="color: var(--color-text-muted);">READY</span>
+                                <span class="log-msg">SilverGrove Mission Control online. Select a resident and execute check.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: A2A ALERTS TIMELINE -->
+                    <div class="terminal-tab-content" id="tab-alerts" style="padding: 16px; overflow-y: auto;">
+                        <div id="alerts-timeline" class="alerts-timeline">
+                            <div class="no-alerts-placeholder">
+                                <span style="display:flex;align-items:center;justify-content:center;color:#475569;margin-bottom:0.8rem;">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                    </svg>
+                                </span>
+                                <p>No active alerts dispatched. System running in baseline safety thresholds.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -284,11 +286,11 @@
         </main>
     </div>
 
-    <!-- Alert Modal popup for instant alert notification -->
+    <!-- Alert Consensus Modal -->
     <div id="modal-alert" class="modal hidden">
         <div class="modal-content glass-panel">
             <div class="modal-header">
-                <span class="modal-warning-icon" style="display: flex; align-items: center; justify-content: center; color: #ef4444;">
+                <span class="modal-warning-icon" style="display:flex;align-items:center;justify-content:center;color:#ef4444;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                         <line x1="12" y1="9" x2="12" y2="13"></line>
@@ -300,11 +302,11 @@
             <div class="modal-body">
                 <p id="modal-message"></p>
                 <div class="modal-correlation-box glass-panel-inner">
-                    <h4>Clinical Correlation</h4>
+                    <h4>CLINICAL CORRELATION</h4>
                     <p id="modal-correlation"></p>
                 </div>
                 <div class="modal-actions-box">
-                    <h4>Required Action Interventions</h4>
+                    <h4>REQUIRED ACTION INTERVENTIONS</h4>
                     <ul id="modal-actions-list"></ul>
                 </div>
             </div>
@@ -318,7 +320,7 @@
     <div id="modal-config" class="modal hidden">
         <div class="modal-content glass-panel" style="max-width: 450px;">
             <div class="modal-header">
-                <span class="modal-warning-icon" style="display: flex; align-items: center; justify-content: center; color: #00f2fe;">
+                <span class="modal-warning-icon" style="display:flex;align-items:center;justify-content:center;color:#00f2fe;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
                         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
@@ -326,17 +328,17 @@
                 </span>
                 <h2>Connect Cloud Run Backend</h2>
             </div>
-            <div class="modal-body" style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
-                <p style="font-size: 13px; color: var(--color-text-muted);">
-                    Specify your Google Cloud Run API Gateway URL to securely connect this Cloudflare Pages frontend with your active agents.
+            <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;margin-top:10px;">
+                <p style="font-size:13px;color:var(--color-text-muted);">
+                    Specify your Google Cloud Run API Gateway URL to connect this frontend with your active agents.
                 </p>
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <label style="font-size: 11px; font-weight: 700; color: white; text-transform: uppercase;">Cloud Run Service URL:</label>
-                    <input type="text" id="input-backend-url" placeholder="https://silvergrove-a2a-xxxx-uc.a.run.app" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; color: white; font-family: monospace; font-size: 12px; outline: none; width: 100%;">
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                    <label style="font-size:11px;font-weight:700;color:white;text-transform:uppercase;">Cloud Run Service URL:</label>
+                    <input type="text" id="input-backend-url" placeholder="https://silvergrove-a2a-xxxx-uc.a.run.app" style="background:rgba(0,0,0,0.3);border:1px solid var(--border-color);border-radius:8px;padding:10px;color:white;font-family:monospace;font-size:12px;outline:none;width:100%;">
                 </div>
-                <div id="config-status" style="font-size: 11px; font-weight: 600; min-height: 16px;"></div>
+                <div id="config-status" style="font-size:11px;font-weight:600;min-height:16px;"></div>
             </div>
-            <div class="modal-footer" style="display: flex; gap: 10px; margin-top: 10px;">
+            <div class="modal-footer" style="display:flex;gap:10px;margin-top:10px;">
                 <button id="config-reset-btn" class="btn btn-secondary">Use Localhost</button>
                 <button id="config-connect-btn" class="btn btn-primary">Connect Backend</button>
                 <button id="config-close-btn" class="btn btn-secondary">Close</button>

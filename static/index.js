@@ -1,29 +1,91 @@
-// SilverGrove Client Side Orchestrator
+// SilverGrove Unified Command Center
+// All agent progress is driven by real-time SSE events from the backend.
+// No fake delays. Every visual update comes from actual backend execution.
+
 let activeResidentId = null;
+let sseSource = null;
+let currentFilter = 'all';
+let allLoggedEvents = [];
+
+// Accumulated trajectory data from SSE events
+let liveTrajectory = {
+    sensory_guardian: { status: 'SKIPPED', output: '' },
+    medical_compliance: { status: 'SKIPPED', output: '' },
+    cognitive_companion: { status: 'SKIPPED', output: '' },
+    care_coordinator: { status: 'SKIPPED', output: '' }
+};
 
 function getApiBaseUrl() {
     return localStorage.getItem("silvergrove_api_url") || "";
 }
 
+// ============================================================
+// INITIALIZATION
+// ============================================================
+
 document.addEventListener("DOMContentLoaded", () => {
     initResidents();
     initAlerts();
+    checkConnection();
+    setInterval(checkConnection, 8000);
 
-    // Event listeners
+    // Core actions
     document.getElementById("trigger-check-btn").addEventListener("click", triggerAgentCheck);
     document.getElementById("clear-btn").addEventListener("click", clearAlertTimeline);
     document.getElementById("modal-ack-btn").addEventListener("click", closeModal);
-    
-    // Backend config listeners
+
+    // Backend config
     document.getElementById("config-backend-btn").addEventListener("click", openConfigModal);
     document.getElementById("config-close-btn").addEventListener("click", closeConfigModal);
     document.getElementById("config-reset-btn").addEventListener("click", resetConfigToLocal);
     document.getElementById("config-connect-btn").addEventListener("click", connectToBackend);
+
+    // Terminal tab switching
+    document.querySelectorAll('.terminal-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.terminal-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.terminal-tab-content').forEach(c => c.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+        });
+    });
+
+    // Filter chips
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            currentFilter = chip.dataset.filter;
+            applyLogFilter();
+        });
+    });
 });
 
+// ============================================================
+// CONNECTION STATUS
+// ============================================================
+
+async function checkConnection() {
+    const dot = document.getElementById('conn-dot');
+    const text = document.getElementById('conn-text');
+    try {
+        const res = await fetch(getApiBaseUrl() + '/api/alerts');
+        if (res.ok) {
+            dot.classList.add('online');
+            text.textContent = getApiBaseUrl() ? 'Cloud Run Connected' : 'Localhost Connected';
+        } else { throw new Error(); }
+    } catch {
+        dot.classList.remove('online');
+        text.textContent = 'Disconnected';
+    }
+}
+
+// ============================================================
+// BACKEND CONFIG MODAL
+// ============================================================
+
 function openConfigModal() {
-    const input = document.getElementById("input-backend-url");
-    input.value = getApiBaseUrl();
+    document.getElementById("input-backend-url").value = getApiBaseUrl();
     document.getElementById("config-status").innerText = "";
     document.getElementById("modal-config").classList.remove("hidden");
 }
@@ -36,10 +98,7 @@ function resetConfigToLocal() {
     localStorage.removeItem("silvergrove_api_url");
     document.getElementById("config-status").style.color = "var(--color-success)";
     document.getElementById("config-status").innerText = "Switched to Localhost backend!";
-    setTimeout(() => {
-        closeConfigModal();
-        window.location.reload();
-    }, 1000);
+    setTimeout(() => { closeConfigModal(); window.location.reload(); }, 1000);
 }
 
 async function connectToBackend() {
@@ -49,44 +108,39 @@ async function connectToBackend() {
         document.getElementById("config-status").innerText = "URL cannot be empty.";
         return;
     }
-    
-    // Standardize URL formatting
-    if (url.endsWith("/")) {
-        url = url.slice(0, -1);
-    }
-    
+    if (url.endsWith("/")) url = url.slice(0, -1);
+
     document.getElementById("config-status").style.color = "var(--color-info)";
     document.getElementById("config-status").innerText = "Validating connection...";
-    
+
     try {
         const res = await fetch(url + "/api/residents");
         if (res.ok) {
             localStorage.setItem("silvergrove_api_url", url);
             document.getElementById("config-status").style.color = "var(--color-success)";
             document.getElementById("config-status").innerText = "Connected successfully!";
-            setTimeout(() => {
-                closeConfigModal();
-                window.location.reload();
-            }, 1000);
+            setTimeout(() => { closeConfigModal(); window.location.reload(); }, 1000);
         } else {
             throw new Error("Endpoint returned status " + res.status);
         }
     } catch (err) {
         document.getElementById("config-status").style.color = "var(--color-danger)";
         document.getElementById("config-status").innerText = "Failed to connect. Ensure URL is correct and CORS is enabled.";
-        console.error(err);
     }
 }
 
-// Load the Resident list into sidebar
+// ============================================================
+// RESIDENT DIRECTORY
+// ============================================================
+
 async function initResidents() {
     try {
         const res = await fetch(getApiBaseUrl() + "/api/residents");
         const residents = await res.json();
-        
+
         const listContainer = document.getElementById("residents-list");
         listContainer.innerHTML = "";
-        
+
         if (residents.length === 0) {
             listContainer.innerHTML = "<p class='placeholder-text'>No residents configured.</p>";
             return;
@@ -96,7 +150,6 @@ async function initResidents() {
             const card = document.createElement("div");
             card.className = `resident-card glass-panel-inner ${idx === 0 ? "active" : ""}`;
             card.dataset.id = r.id;
-            
             card.innerHTML = `
                 <div class="res-header">
                     <span class="res-name">${r.name}</span>
@@ -104,51 +157,37 @@ async function initResidents() {
                 </div>
                 <div class="res-meta">${r.conditions.slice(0, 2).join(", ")}</div>
             `;
-            
             card.addEventListener("click", () => selectResident(r.id));
             listContainer.appendChild(card);
         });
 
-        // Select the first resident by default
-        if (residents.length > 0) {
-            selectResident(residents[0].id);
-        }
-
+        if (residents.length > 0) selectResident(residents[0].id);
     } catch (e) {
         console.error("Error loading residents:", e);
         document.getElementById("residents-list").innerHTML = "<p class='status-pill status-failed'>Failed to connect to backend.</p>";
     }
 }
 
-// Handle switching residents
 async function selectResident(residentId) {
     activeResidentId = residentId;
-    
-    // Manage UI active card classes
+
     document.querySelectorAll(".resident-card").forEach(card => {
-        if (card.dataset.id === residentId) {
-            card.classList.add("active");
-        } else {
-            card.classList.remove("active");
-        }
+        card.classList.toggle("active", card.dataset.id === residentId);
     });
 
-    // Reset workspace and agent cards
     resetAgentWorkspace();
 
     try {
         const res = await fetch(getApiBaseUrl() + `/api/residents/${residentId}`);
         const data = await res.json();
-        
         const p = data.profile;
         const v = data.vitals;
 
-        // Render Resident Profile Sidebar
         document.getElementById("selected-resident-profile").classList.remove("hidden");
         document.getElementById("prof-name").innerText = p.name;
         document.getElementById("prof-age").innerText = p.age;
         document.getElementById("prof-cond").innerText = p.conditions.join(", ");
-        
+
         const medsList = document.getElementById("prof-meds-list");
         medsList.innerHTML = "";
         p.medications.forEach(m => {
@@ -157,59 +196,60 @@ async function selectResident(residentId) {
             medsList.appendChild(li);
         });
 
-        // Render Ambient Sensor Telemetry
         document.getElementById("vital-hr").innerText = v.telemetry.heart_rate_bpm;
         document.getElementById("base-hr").innerText = v.baselines.heart_rate_bpm;
-        
         document.getElementById("vital-bp").innerText = `${v.telemetry.bp_systolic}/${v.telemetry.bp_diastolic}`;
         document.getElementById("bp-deviation").innerText = `Baseline: ${v.baselines.bp_systolic}/${v.baselines.bp_diastolic}`;
-        
         document.getElementById("vital-gait").innerText = v.telemetry.gait_speed_ms;
         document.getElementById("gait-deviation").innerText = `Baseline: ${v.baselines.gait_speed_ms} m/s`;
-        
         document.getElementById("vital-sleep").innerText = v.telemetry.sleep_hours;
         document.getElementById("base-sleep").innerText = v.baselines.sleep_hours;
-        
         document.getElementById("vital-occupancy").innerText = v.telemetry.room_occupancy.replace('_', ' ').toUpperCase();
 
-        // Highlight Telemetry Anomalies
         const bpCard = document.getElementById("card-bp");
         const gaitCard = document.getElementById("card-gait");
-        
         bpCard.classList.remove("anomaly-alert");
         gaitCard.classList.remove("anomaly-alert");
-        
-        if (v.status === "ANOMALY_DETECTED") {
-            if (v.telemetry.bp_systolic >= 140 || v.telemetry.bp_systolic <= 100) {
-                bpCard.classList.add("anomaly-alert");
-            }
-            if (v.gait_change_percent <= -15.0) {
-                gaitCard.classList.add("anomaly-alert");
-            }
-        }
 
+        if (v.status === "ANOMALY_DETECTED") {
+            if (v.telemetry.bp_systolic >= 140 || v.telemetry.bp_systolic <= 100) bpCard.classList.add("anomaly-alert");
+            if (v.gait_change_percent <= -15.0) gaitCard.classList.add("anomaly-alert");
+        }
     } catch (e) {
         console.error("Error fetching resident details:", e);
     }
 }
 
-// Reset Agent workspace back to empty/waiting state
+// ============================================================
+// AGENT WORKSPACE
+// ============================================================
+
 function resetAgentWorkspace() {
     const agents = ["sensory", "compliance", "companion", "coordinator"];
     agents.forEach(a => {
         const col = document.getElementById(`agent-${a}`);
         col.querySelector(".status-pill").className = "status-pill status-waiting";
         col.querySelector(".status-pill").innerText = "Waiting";
-        
         const box = col.querySelector(".agent-output-box");
         if (a === "sensory") box.innerHTML = "<p class='placeholder-text'>Waiting to ingest vital telemetry streams...</p>";
         if (a === "compliance") box.innerHTML = "<p class='placeholder-text'>Waiting for sensory anomaly escalation...</p>";
         if (a === "companion") box.innerHTML = "<p class='placeholder-text'>Waiting for clinical findings check-in draft...</p>";
         if (a === "coordinator") box.innerHTML = "<p class='placeholder-text'>Waiting to dispatch A2A cryptographic alerts...</p>";
     });
+
+    // Reset empathy section
+    document.getElementById("empathy-content").innerHTML =
+        "<p class='empathy-placeholder'>The Cognitive Companion will speak here after the clinical consensus completes.</p>";
+
+    // Reset trajectory
+    liveTrajectory = {
+        sensory_guardian: { status: 'SKIPPED', output: '' },
+        medical_compliance: { status: 'SKIPPED', output: '' },
+        cognitive_companion: { status: 'SKIPPED', output: '' },
+        care_coordinator: { status: 'SKIPPED', output: '' }
+    };
 }
 
-// Staggered Visual Agent Progress Simulation helper
 function setAgentStatus(agentKey, statusText, statusClass) {
     const col = document.getElementById(`agent-${agentKey}`);
     const pill = col.querySelector(".status-pill");
@@ -217,91 +257,225 @@ function setAgentStatus(agentKey, statusText, statusClass) {
     pill.innerText = statusText;
 }
 
-// Trigger Multi-Agent Orchestrator health checkup
-async function triggerAgentCheck() {
+function setAgentOutput(agentKey, html) {
+    const col = document.getElementById(`agent-${agentKey}`);
+    const box = col.querySelector(".agent-output-box");
+    box.innerHTML = `<div style='animation: fadeIn 0.4s ease'>${html}</div>`;
+}
+
+// ============================================================
+// SSE-DRIVEN HEALTH CHECK (THE CORE UNIFICATION)
+// ============================================================
+
+function triggerAgentCheck() {
     if (!activeResidentId) return;
 
     const btn = document.getElementById("trigger-check-btn");
     btn.disabled = true;
-    btn.innerText = "Analyzing Telemetry...";
+    btn.innerText = "Agents Running...";
 
-    // Reset workspace before check
+    // Reset everything
     resetAgentWorkspace();
+    clearTerminalLogs();
+    allLoggedEvents = [];
 
-    // Start Staggered Agent Telemetry Track Animation
+    // Switch to terminal tab to show live activity
+    document.querySelectorAll('.terminal-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.terminal-tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelector('[data-tab="terminal"]').classList.add('active');
+    document.getElementById('tab-terminal').classList.add('active');
+
+    // Update terminal status
+    document.getElementById('terminal-status').textContent = `silvergrove://running/${activeResidentId}`;
+
+    // Set initial agent state
     setAgentStatus("sensory", "Analyzing Vitals", "status-running");
-    
-    try {
-        const response = await fetch(getApiBaseUrl() + `/api/residents/${activeResidentId}/check`, {
-            method: "POST"
-        });
-        const trajectory = await response.json();
-        
-        // 1. Sensory Guardian completes
-        setAgentStatus("sensory", "Completed", "status-completed");
-        const sensoryBox = document.getElementById("agent-sensory").querySelector(".agent-output-box");
-        sensoryBox.innerHTML = `<div style='animation: fadeIn 0.4s ease'>${formatMarkdown(trajectory.sensory_guardian.output)}</div>`;
-        
-        // Check if escalation occurred
-        if (trajectory.medical_compliance.status === "SKIPPED") {
-            setAgentStatus("compliance", "Skipped", "status-waiting");
-            setAgentStatus("companion", "Skipped", "status-waiting");
-            setAgentStatus("coordinator", "Skipped", "status-waiting");
-            btn.disabled = false;
-            btn.innerText = "Run Multi-Agent Health Check";
-            return;
+
+    // Open SSE stream -- THIS IS THE SINGLE SOURCE OF TRUTH
+    const baseUrl = getApiBaseUrl();
+    const sseUrl = `${baseUrl}/api/residents/${activeResidentId}/check/stream`;
+
+    if (sseSource) sseSource.close();
+    sseSource = new EventSource(sseUrl);
+
+    sseSource.onmessage = (event) => {
+        try {
+            const evt = JSON.parse(event.data);
+            allLoggedEvents.push(evt);
+
+            // Always append to terminal log
+            if (currentFilter === 'all' || evt.agent === currentFilter) {
+                appendLogRow(evt);
+            }
+
+            // Drive agent card updates from real events
+            processAgentEvent(evt);
+        } catch (e) {
+            console.error("SSE parse error:", e);
         }
+    };
 
-        // 2. Compliance active
-        setAgentStatus("compliance", "Running FDA Lookups", "status-running");
-        await delay(1200);
-        setAgentStatus("compliance", "Completed", "status-completed");
-        const compBox = document.getElementById("agent-compliance").querySelector(".agent-output-box");
-        compBox.innerHTML = `<div style='animation: fadeIn 0.4s ease'>${formatMarkdown(trajectory.medical_compliance.output)}</div>`;
-
-        // 3. Companion active
-        setAgentStatus("companion", "Composing Empathy Dialog", "status-running");
-        await delay(1200);
-        setAgentStatus("companion", "Completed", "status-completed");
-        const compaBox = document.getElementById("agent-companion").querySelector(".agent-output-box");
-        compaBox.innerHTML = `<div style='animation: fadeIn 0.4s ease'><strong>Empathetic Dialogue:</strong><br><br><em>"${trajectory.cognitive_companion.output}"</em></div>`;
-
-        // 4. Coordinator active
-        setAgentStatus("coordinator", "Routing Outbound A2A", "status-running");
-        await delay(1200);
-        setAgentStatus("coordinator", "Completed", "status-completed");
-        const coordBox = document.getElementById("agent-coordinator").querySelector(".agent-output-box");
-        coordBox.innerHTML = `<div style='animation: fadeIn 0.4s ease'>${formatMarkdown(trajectory.care_coordinator.output)}</div>`;
-
-        // Refresh the outbound timeline feed
-        initAlerts();
-
-        // Trigger premium overlay warning modal if warning/critical
-        triggerModalAlert(trajectory);
-
-    } catch (e) {
-        console.error("Agent execution failed:", e);
-        setAgentStatus("sensory", "Failed", "status-failed");
-    } finally {
+    sseSource.onerror = () => {
+        sseSource.close();
+        sseSource = null;
         btn.disabled = false;
         btn.innerText = "Run Multi-Agent Health Check";
+        document.getElementById('terminal-status').textContent = 'silvergrove://complete';
+
+        // Refresh alerts after completion
+        initAlerts();
+
+        // Show consensus modal if we have trajectory data
+        triggerModalAlert();
+    };
+}
+
+// Map SSE trace events to visual agent card updates
+function processAgentEvent(evt) {
+    const agent = evt.agent;
+    const type = evt.event_type;
+    const data = evt.data || {};
+
+    // ORCHESTRATOR stage events control agent card transitions
+    if (agent === 'ORCHESTRATOR') {
+        if (type === 'STAGE' || type === 'START') {
+            if (evt.message.includes('Sensory Guardian')) {
+                setAgentStatus('sensory', 'Analyzing Vitals', 'status-running');
+            }
+        }
+        if (type === 'HANDOFF') {
+            if (evt.message.includes('Medical Compliance')) {
+                setAgentStatus('compliance', 'Running FDA Lookups', 'status-running');
+            }
+            if (evt.message.includes('Cognitive Companion')) {
+                setAgentStatus('companion', 'Composing Dialogue', 'status-running');
+            }
+            if (evt.message.includes('Care Coordinator')) {
+                setAgentStatus('coordinator', 'Routing A2A', 'status-running');
+            }
+        }
+        if (type === 'COMPLETE') {
+            // Everything is done
+        }
+    }
+
+    // Agent LLM_RESPONSE events populate the agent output cards
+    if (type === 'LLM_RESPONSE' && data.response) {
+        if (agent === 'SENSORY_GUARDIAN') {
+            setAgentStatus('sensory', 'Completed', 'status-completed');
+            setAgentOutput('sensory', formatMarkdown(data.response));
+            liveTrajectory.sensory_guardian = { status: 'COMPLETED', output: data.response };
+        }
+        if (agent === 'MEDICAL_COMPLIANCE') {
+            setAgentStatus('compliance', 'Completed', 'status-completed');
+            setAgentOutput('compliance', formatMarkdown(data.response));
+            liveTrajectory.medical_compliance = { status: 'COMPLETED', output: data.response };
+        }
+        if (agent === 'COGNITIVE_COMPANION') {
+            setAgentStatus('companion', 'Completed', 'status-completed');
+            setAgentOutput('companion', `<strong>Empathetic Dialogue:</strong><br><br><em>"${data.response}"</em>`);
+            liveTrajectory.cognitive_companion = { status: 'COMPLETED', output: data.response };
+
+            // Populate the empathy dialogue section
+            document.getElementById("empathy-content").innerHTML = `
+                <div class="empathy-bubble">
+                    <div class="empathy-speaker">
+                        <div class="empathy-speaker-dot"></div>
+                        <span class="empathy-speaker-name">Cognitive Companion</span>
+                    </div>
+                    <p class="empathy-text">"${escapeHtml(data.response)}"</p>
+                </div>
+            `;
+        }
+        if (agent === 'CARE_COORDINATOR') {
+            setAgentStatus('coordinator', 'Completed', 'status-completed');
+            setAgentOutput('coordinator', formatMarkdown(data.response));
+            liveTrajectory.care_coordinator = { status: 'COMPLETED', output: data.response };
+        }
+    }
+
+    // Handle FALLBACK events (when LLM retries are exhausted)
+    if (type === 'FALLBACK') {
+        if (agent === 'SENSORY_GUARDIAN') setAgentStatus('sensory', 'Fallback Active', 'status-running');
+        if (agent === 'MEDICAL_COMPLIANCE') setAgentStatus('compliance', 'Fallback Active', 'status-running');
+        if (agent === 'COGNITIVE_COMPANION') setAgentStatus('companion', 'Fallback Active', 'status-running');
+        if (agent === 'CARE_COORDINATOR') setAgentStatus('coordinator', 'Fallback Active', 'status-running');
+    }
+
+    // Handle TOOL_CALL events
+    if (type === 'TOOL_CALL') {
+        if (agent === 'SENSORY_GUARDIAN') setAgentStatus('sensory', 'Calling Tools', 'status-running');
+        if (agent === 'MEDICAL_COMPLIANCE') setAgentStatus('compliance', 'Calling Tools', 'status-running');
+        if (agent === 'CARE_COORDINATOR') setAgentStatus('coordinator', 'Calling Tools', 'status-running');
+    }
+
+    // Handle ERROR events
+    if (type === 'ERROR') {
+        if (agent === 'SENSORY_GUARDIAN' || evt.message.includes('Sensory')) setAgentStatus('sensory', 'Error', 'status-failed');
+        if (agent === 'MEDICAL_COMPLIANCE' || evt.message.includes('Medical')) setAgentStatus('compliance', 'Error', 'status-failed');
+        if (agent === 'COGNITIVE_COMPANION' || evt.message.includes('Companion')) setAgentStatus('companion', 'Error', 'status-failed');
+        if (agent === 'CARE_COORDINATOR' || evt.message.includes('Coordinator')) setAgentStatus('coordinator', 'Error', 'status-failed');
     }
 }
 
-// Modal popup launcher for alerts
-function triggerModalAlert(trajectory) {
-    const modal = document.getElementById("modal-alert");
-    
-    // Parse findings from the correlation report to present inside modal
-    const complianceText = trajectory.medical_compliance.output;
-    const companionText = trajectory.cognitive_companion.output;
-    
+// ============================================================
+// TERMINAL LOG PANEL
+// ============================================================
+
+function clearTerminalLogs() {
+    document.getElementById('terminal-logs').innerHTML = '';
+}
+
+function appendLogRow(evt) {
+    const container = document.getElementById('terminal-logs');
+    const row = document.createElement('div');
+    row.className = 'log-row';
+
+    let dataBlock = '';
+    if (evt.data && Object.keys(evt.data).length > 0) {
+        const truncated = JSON.stringify(evt.data, null, 2);
+        if (truncated.length > 10) {
+            dataBlock = `<div class="log-data-block">${escapeHtml(truncated.substring(0, 300))}${truncated.length > 300 ? '...' : ''}</div>`;
+        }
+    }
+
+    row.innerHTML = `
+        <span class="log-time">${evt.timestamp_str}</span>
+        <span class="log-agent agent-${evt.agent}">${evt.agent}</span>
+        <span class="log-event">${evt.event_type}</span>
+        <span class="log-msg">${escapeHtml(evt.message)}${dataBlock}</span>
+    `;
+
+    container.appendChild(row);
+    container.scrollTop = container.scrollHeight;
+}
+
+function applyLogFilter() {
+    const container = document.getElementById('terminal-logs');
+    container.innerHTML = '';
+    allLoggedEvents.forEach(evt => {
+        if (currentFilter === 'all' || evt.agent === currentFilter) {
+            appendLogRow(evt);
+        }
+    });
+}
+
+// ============================================================
+// CONSENSUS MODAL
+// ============================================================
+
+function triggerModalAlert() {
+    const complianceText = liveTrajectory.medical_compliance.output;
+    const companionText = liveTrajectory.cognitive_companion.output;
+
+    // Only show modal if we have real data
+    if (!complianceText && !companionText) return;
+
     document.getElementById("modal-message").innerHTML = `
         <strong>Observed Anomaly:</strong> Ambient camera-free telemetry detected critical gait speed velocity slowdown and blood pressure shifts for the resident.<br><br>
-        <strong>Empathy Guidance:</strong> "${companionText}"
+        <strong>Empathy Guidance:</strong> "${escapeHtml(companionText)}"
     `;
-    
-    // Extract interaction notes dynamically
+
     let interaction = "Hypotensive risks associated with medication introduction. Advise standing slowly, hydration, and observation.";
     if (complianceText.includes("lisinopril") || complianceText.includes("Lisinopril")) {
         interaction = "Dangerous drug-drug interactions between Metoprolol and Lisinopril. High risk of orthostatic hypotension and fall accidents.";
@@ -311,35 +485,36 @@ function triggerModalAlert(trajectory) {
         interaction = "CNS depression and postural instability triggered by post-op Oxycodone opioid administration. High somnolence and fall risk.";
     }
     document.getElementById("modal-correlation").innerText = interaction;
-    
-    // Format actions list - strictly no emojis!
-    const actionList = document.getElementById("modal-actions-list");
-    actionList.innerHTML = `
+
+    document.getElementById("modal-actions-list").innerHTML = `
         <li>[!] Guide resident to hydrate immediately and stand up slowly</li>
         <li>[!] Notify family representative agent over active A2A node</li>
         <li>[!] Request primary care physician review pharmacological dosages</li>
     `;
 
-    modal.classList.remove("hidden");
+    document.getElementById("modal-alert").classList.remove("hidden");
 }
 
 function closeModal() {
     document.getElementById("modal-alert").classList.add("hidden");
 }
 
-// Fetch active outbound A2A alerts from timeline
+// ============================================================
+// A2A ALERTS TIMELINE
+// ============================================================
+
 async function initAlerts() {
     try {
         const res = await fetch(getApiBaseUrl() + "/api/alerts");
         const alerts = await res.json();
-        
+
         const timeline = document.getElementById("alerts-timeline");
         timeline.innerHTML = "";
-        
+
         if (alerts.length === 0) {
             timeline.innerHTML = `
                 <div class="no-alerts-placeholder">
-                    <span class="timeline-empty-icon" style="display: flex; align-items: center; justify-content: center; color: #475569; margin-bottom: 0.8rem;">
+                    <span style="display:flex;align-items:center;justify-content:center;color:#475569;margin-bottom:0.8rem;">
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
@@ -355,7 +530,7 @@ async function initAlerts() {
             const item = document.createElement("div");
             const severityClass = alert.severity === "CRITICAL" ? "critical" : "warning";
             item.className = `alert-feed-item glass-panel-inner ${severityClass}`;
-            
+
             const date = new Date(alert.timestamp);
             const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -365,18 +540,16 @@ async function initAlerts() {
                     <span class="alert-item-time">${timeStr}</span>
                 </div>
                 <div class="alert-item-msg">${alert.message}</div>
-                ${alert.correlation ? `<div class="alert-item-msg" style="color: #fda4af; font-size: 11px; margin-top: 4px;">[x] Correlation: ${alert.correlation.slice(0, 120)}...</div>` : ''}
-                <div class="alert-item-tag">A2A DISPATCHED • SIGNED</div>
+                ${alert.correlation ? `<div class="alert-item-msg" style="color:#fda4af;font-size:11px;margin-top:4px;">[x] Correlation: ${alert.correlation.slice(0, 120)}...</div>` : ''}
+                <div class="alert-item-tag">A2A DISPATCHED</div>
             `;
             timeline.appendChild(item);
         });
-
     } catch (e) {
         console.error("Error loading alert timeline:", e);
     }
 }
 
-// Clear alerts timeline
 async function clearAlertTimeline() {
     if (!confirm("Are you sure you want to clear the A2A alert log history?")) return;
     try {
@@ -387,18 +560,23 @@ async function clearAlertTimeline() {
     }
 }
 
-// Helper: Basic Markdown to HTML converter for agent responses
+// ============================================================
+// UTILITIES
+// ============================================================
+
 function formatMarkdown(text) {
     if (!text) return "";
-    return text
+    return escapeHtml(text)
         .replace(/\n/g, "<br>")
         .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
         .replace(/\*(.*?)\*/g, "<em>$1</em>")
-        .replace(/### (.*?)(<br>|$)/g, "<h4 style='font-family: Outfit, sans-serif; font-size: 14px; margin: 10px 0 6px; color: white;'>$1</h4>")
-        .replace(/## (.*?)(<br>|$)/g, "<h3 style='font-family: Outfit, sans-serif; font-size: 16px; margin: 14px 0 8px; color: white;'>$1</h3>");
+        .replace(/### (.*?)(<br>|$)/g, "<h4 style='font-family:Outfit,sans-serif;font-size:14px;margin:10px 0 6px;color:white;'>$1</h4>")
+        .replace(/## (.*?)(<br>|$)/g, "<h3 style='font-family:Outfit,sans-serif;font-size:16px;margin:14px 0 8px;color:white;'>$1</h3>");
 }
 
-// Helper: Delay utility for animations
-function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+function escapeHtml(text) {
+    if (!text) return "";
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
