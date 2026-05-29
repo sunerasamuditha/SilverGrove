@@ -45,6 +45,32 @@ LOCAL_DRUG_DATABASE = {
         ],
         "warnings": "Can cause bradycardia and heart block. Monitor heart rate closely.",
         "interactions": {}
+    },
+    "carbidopa-levodopa": {
+        "generic_name": "Carbidopa-Levodopa",
+        "brand_name": "Sinemet",
+        "side_effects": [
+            "Orthostatic hypotension (dizziness, low blood pressure)",
+            "Dizziness or lightheadedness",
+            "Involuntary muscle movements (dyskinesia)",
+            "Freezing of gait (motor fluctuations / wearing-off effect)",
+            "Drowsiness or sleepiness"
+        ],
+        "warnings": "Caution in elderly. Risk of sudden orthostatic hypotension, hallucination, and motor fluctuations which can cause significant gait freezing and balance loss.",
+        "interactions": {}
+    },
+    "oxycodone": {
+        "generic_name": "Oxycodone HCl",
+        "brand_name": "Roxicodone",
+        "side_effects": [
+            "Extreme drowsiness and somnolence",
+            "Dizziness or confusion",
+            "Muscle weakness or instability",
+            "Constipation",
+            "Slow breathing (respiratory depression)"
+        ],
+        "warnings": "High risk of drowsiness, cognitive slowing, and postural instability in elderly patients post-surgery. Can significantly increase fall risk and slow down recovery kinetics.",
+        "interactions": {}
     }
 }
 

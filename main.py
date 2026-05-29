@@ -1,8 +1,13 @@
 import os
 import sys
+import json
+import uuid
+import asyncio
+import threading
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -12,6 +17,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from agent import SilverGroveOrchestrator
 from tools.vitals_tools import get_resident_vitals, get_resident_details
 from tools.alert_tools import get_alerts_timeline, clear_alerts_timeline
+from tools.trace_events import TraceCollector
+from a2a.agent_cards import get_root_agent_card, get_all_agent_cards
 
 # Initialize FastAPI App
 app = FastAPI(
@@ -99,6 +106,58 @@ def trigger_agent_check(resident_id: str):
         return trajectory
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# Endpoint: Stream End-to-End Multi-Agent Health Check in Real-time
+@app.get("/api/residents/{resident_id}/check/stream")
+def stream_agent_check(resident_id: str):
+    """
+    Asynchronously streams the end-to-end multi-agent clinical audit logs in real-time.
+    Strictly emoji-free standard prefix logs.
+    """
+    async def event_generator():
+        collector = TraceCollector(session_id=f"session_{uuid.uuid4().hex[:8]}")
+        queue = asyncio.Queue()
+        loop = asyncio.get_running_loop()
+        
+        def listener(event):
+            loop.call_soon_threadsafe(queue.put_nowait, event)
+            
+        collector.add_listener(listener)
+        
+        def run_check():
+            try:
+                orchestrator.run_health_check(resident_id, collector)
+            except Exception as e:
+                collector.log("ORCHESTRATOR", "ERROR", f"Fatal exception during multi-agent check: {str(e)}")
+            finally:
+                loop.call_soon_threadsafe(queue.put_nowait, "DONE")
+                
+        thread = threading.Thread(target=run_check)
+        thread.start()
+        
+        while True:
+            event = await queue.get()
+            if event == "DONE":
+                break
+            yield f"data: {json.dumps(event)}\n\n"
+            
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+# A2A Protocol Discovery Endpoints
+@app.get("/.well-known/agent.json")
+def get_root_card():
+    return get_root_agent_card()
+
+@app.get("/a2a/agents")
+def get_agents():
+    return get_all_agent_cards()
+
+@app.get("/a2a/{agent_name}/card")
+def get_agent_card(agent_name: str):
+    cards = get_all_agent_cards()
+    if agent_name in cards:
+        return cards[agent_name]
+    raise HTTPException(status_code=404, detail=f"Agent card {agent_name} not found.")
 
 # Endpoint: Retrieve Active A2A Alerts Timeline
 @app.get("/api/alerts")

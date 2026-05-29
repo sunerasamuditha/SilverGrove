@@ -145,6 +145,7 @@ async function selectResident(residentId) {
 
         // Render Resident Profile Sidebar
         document.getElementById("selected-resident-profile").classList.remove("hidden");
+        document.getElementById("prof-name").innerText = p.name;
         document.getElementById("prof-age").innerText = p.age;
         document.getElementById("prof-cond").innerText = p.conditions.join(", ");
         
@@ -169,7 +170,7 @@ async function selectResident(residentId) {
         document.getElementById("vital-sleep").innerText = v.telemetry.sleep_hours;
         document.getElementById("base-sleep").innerText = v.baselines.sleep_hours;
         
-        document.getElementById("vital-occupancy").innerText = v.telemetry.room_occupancy;
+        document.getElementById("vital-occupancy").innerText = v.telemetry.room_occupancy.replace('_', ' ').toUpperCase();
 
         // Highlight Telemetry Anomalies
         const bpCard = document.getElementById("card-bp");
@@ -179,7 +180,7 @@ async function selectResident(residentId) {
         gaitCard.classList.remove("anomaly-alert");
         
         if (v.status === "ANOMALY_DETECTED") {
-            if (v.telemetry.bp_systolic >= 140) {
+            if (v.telemetry.bp_systolic >= 140 || v.telemetry.bp_systolic <= 100) {
                 bpCard.classList.add("anomaly-alert");
             }
             if (v.gait_change_percent <= -15.0) {
@@ -263,7 +264,7 @@ async function triggerAgentCheck() {
         await delay(1200);
         setAgentStatus("companion", "Completed", "status-completed");
         const compaBox = document.getElementById("agent-companion").querySelector(".agent-output-box");
-        compaBox.innerHTML = `<div style='animation: fadeIn 0.4s ease'><strong>Empathetic Dialogue to Martha:</strong><br><br><em>"${trajectory.cognitive_companion.output}"</em></div>`;
+        compaBox.innerHTML = `<div style='animation: fadeIn 0.4s ease'><strong>Empathetic Dialogue:</strong><br><br><em>"${trajectory.cognitive_companion.output}"</em></div>`;
 
         // 4. Coordinator active
         setAgentStatus("coordinator", "Routing Outbound A2A", "status-running");
@@ -296,23 +297,27 @@ function triggerModalAlert(trajectory) {
     const companionText = trajectory.cognitive_companion.output;
     
     document.getElementById("modal-message").innerHTML = `
-        <strong>Observed Anomaly:</strong> Ambient camera-free telemetry detected critical gait speed velocity slowdown and elevated blood pressure for resident.<br><br>
+        <strong>Observed Anomaly:</strong> Ambient camera-free telemetry detected critical gait speed velocity slowdown and blood pressure shifts for the resident.<br><br>
         <strong>Empathy Guidance:</strong> "${companionText}"
     `;
     
-    // Extract interaction notes
-    let interaction = "Hypotensive risks associated with Metoprolol succinate beta-blocker introduction. Stand slowly, increase fluid hydration.";
+    // Extract interaction notes dynamically
+    let interaction = "Hypotensive risks associated with medication introduction. Advise standing slowly, hydration, and observation.";
     if (complianceText.includes("lisinopril") || complianceText.includes("Lisinopril")) {
         interaction = "Dangerous drug-drug interactions between Metoprolol and Lisinopril. High risk of orthostatic hypotension and fall accidents.";
+    } else if (complianceText.includes("Sinemet") || complianceText.includes("Levodopa")) {
+        interaction = "Parkinsonian motor fluctuations and freezing of gait triggered by Sinemet (Carbidopa-Levodopa) dosage introduction. High fall risk.";
+    } else if (complianceText.includes("Oxycodone")) {
+        interaction = "CNS depression and postural instability triggered by post-op Oxycodone opioid administration. High somnolence and fall risk.";
     }
     document.getElementById("modal-correlation").innerText = interaction;
     
-    // Format actions list
+    // Format actions list - strictly no emojis!
     const actionList = document.getElementById("modal-actions-list");
     actionList.innerHTML = `
-        <li>💧 Guide resident to hydrate immediately and stand up slowly</li>
-        <li>🏡 Notify family representative agent over A2A node</li>
-        <li>🩺 Request primary care physician review Toprol-XL pharmacological dosages</li>
+        <li>[!] Guide resident to hydrate immediately and stand up slowly</li>
+        <li>[!] Notify family representative agent over active A2A node</li>
+        <li>[!] Request primary care physician review pharmacological dosages</li>
     `;
 
     modal.classList.remove("hidden");
@@ -334,7 +339,12 @@ async function initAlerts() {
         if (alerts.length === 0) {
             timeline.innerHTML = `
                 <div class="no-alerts-placeholder">
-                    <span class="timeline-empty-icon">🔔</span>
+                    <span class="timeline-empty-icon" style="display: flex; align-items: center; justify-content: center; color: #475569; margin-bottom: 0.8rem;">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                    </span>
                     <p>No active alerts dispatched. System running in baseline safety thresholds.</p>
                 </div>
             `;
@@ -355,7 +365,7 @@ async function initAlerts() {
                     <span class="alert-item-time">${timeStr}</span>
                 </div>
                 <div class="alert-item-msg">${alert.message}</div>
-                ${alert.correlation ? `<div class="alert-item-msg" style="color: #fda4af; font-size: 11px; margin-top: 4px;">🧬 Correlation: ${alert.correlation.slice(0, 120)}...</div>` : ''}
+                ${alert.correlation ? `<div class="alert-item-msg" style="color: #fda4af; font-size: 11px; margin-top: 4px;">[x] Correlation: ${alert.correlation.slice(0, 120)}...</div>` : ''}
                 <div class="alert-item-tag">A2A DISPATCHED • SIGNED</div>
             `;
             timeline.appendChild(item);

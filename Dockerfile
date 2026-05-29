@@ -21,7 +21,9 @@ RUN pip install --no-cache-dir \
     mcp \
     fastapi \
     uvicorn \
-    python-dotenv
+    python-dotenv \
+    google-cloud-firestore \
+    google-cloud-pubsub
 
 # Copy the application source code into the container
 COPY . .

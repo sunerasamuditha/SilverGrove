@@ -1,6 +1,11 @@
 import os
+import sys
 import json
 from mcp.server.fastmcp import FastMCP
+
+# Ensure parent directory is in path for easy importing
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from services.gcp_service import get_resident_profile_db
 
 # Initialize MCP Server
 mcp = FastMCP("SilverGroveVitalsServer")
@@ -30,13 +35,33 @@ SIMULATED_TELEMETRY = {
         "sleep_hours": 6.2,
         "room_occupancy": "living_room",
         "timestamp": "2026-05-27T22:00:00Z"
+    },
+    "clara_003": {
+        "heart_rate_bpm": 76,
+        "bp_systolic": 98,
+        "bp_diastolic": 60,
+        "gait_speed_ms": 0.42,
+        "sleep_hours": 4.8,
+        "room_occupancy": "hallway",
+        "timestamp": "2026-05-27T22:00:00Z"
+    },
+    "james_004": {
+        "heart_rate_bpm": 92,
+        "bp_systolic": 138,
+        "bp_diastolic": 84,
+        "gait_speed_ms": 0.35,
+        "sleep_hours": 8.5,
+        "room_occupancy": "living_room",
+        "timestamp": "2026-05-27T22:00:00Z"
     }
 }
 
 # Gait history trend for the past 5 days
 GAIT_HISTORY = {
     "martha_001": [0.85, 0.82, 0.79, 0.75, 0.72],  # Declining trend!
-    "arthur_002": [0.65, 0.64, 0.65, 0.63, 0.64]   # Stable trend!
+    "arthur_002": [0.65, 0.64, 0.65, 0.63, 0.64],   # Stable trend!
+    "clara_003": [0.58, 0.55, 0.52, 0.46, 0.42],    # Declining due to Parkinson's shuffle
+    "james_004": [0.70, 0.55, 0.45, 0.38, 0.35]     # Severe post-op drop
 }
 
 def load_residents():
@@ -49,8 +74,7 @@ def load_residents():
 @mcp.tool()
 def get_resident_details(resident_id: str) -> dict:
     """Retrieve full details of a resident (name, age, active conditions, medications)."""
-    residents = load_residents()
-    return residents.get(resident_id, {"error": f"Resident {resident_id} not found."})
+    return get_resident_profile_db(resident_id)
 
 @mcp.tool()
 def get_resident_vitals(resident_id: str) -> dict:
@@ -59,8 +83,7 @@ def get_resident_vitals(resident_id: str) -> dict:
     if not vitals:
         return {"error": f"No vital telemetry available for resident {resident_id}."}
     
-    residents = load_residents()
-    profile = residents.get(resident_id, {})
+    profile = get_resident_profile_db(resident_id)
     baselines = profile.get("baselines", {})
     
     # Calculate percentage change for critical metrics
@@ -78,7 +101,7 @@ def get_resident_vitals(resident_id: str) -> dict:
         "baselines": baselines,
         "gait_change_percent": round(gait_change, 1),
         "bp_systolic_change_percent": round(bp_sys_change, 1),
-        "status": "ANOMALY_DETECTED" if abs(gait_change) >= 15.0 or bp_sys >= 140 else "NORMAL"
+        "status": "ANOMALY_DETECTED" if abs(gait_change) >= 15.0 or bp_sys >= 140 or bp_sys <= 100 else "NORMAL"
     }
 
 @mcp.tool()

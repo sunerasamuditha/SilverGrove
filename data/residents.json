@@ -68,5 +68,67 @@
       "gait_speed_ms": 0.65,
       "sleep_hours": 6.8
     }
+  },
+  "clara_003": {
+    "id": "clara_003",
+    "name": "Clara Higgins",
+    "age": 76,
+    "conditions": ["Parkinson's Disease", "Orthostatic Hypotension"],
+    "medications": [
+      {
+        "name": "Carbidopa-Levodopa",
+        "brand_name": "Sinemet",
+        "dose": "25-100mg",
+        "frequency": "Three times daily",
+        "started_date": "2026-05-24",
+        "purpose": "Parkinson's motor symptoms and rigidity control"
+      },
+      {
+        "name": "Midodrine HCl",
+        "brand_name": "Orvaten",
+        "dose": "5mg",
+        "frequency": "Three times daily during daytime",
+        "started_date": "2025-09-12",
+        "purpose": "Prevention of orthostatic blood pressure drops"
+      }
+    ],
+    "baselines": {
+      "heart_rate_bpm": 72,
+      "bp_systolic": 118,
+      "bp_diastolic": 74,
+      "gait_speed_ms": 0.58,
+      "sleep_hours": 6.0
+    }
+  },
+  "james_004": {
+    "id": "james_004",
+    "name": "James Sterling",
+    "age": 80,
+    "conditions": ["Post-Op Hip Replacement", "Atrial Fibrillation"],
+    "medications": [
+      {
+        "name": "Oxycodone HCl",
+        "brand_name": "Roxicodone",
+        "dose": "5mg",
+        "frequency": "Every 6 hours as needed for severe pain",
+        "started_date": "2026-05-25",
+        "purpose": "Severe post-surgical pain control"
+      },
+      {
+        "name": "Apixaban",
+        "brand_name": "Eliquis",
+        "dose": "5mg",
+        "frequency": "Twice daily",
+        "started_date": "2024-04-10",
+        "purpose": "Stroke prevention in atrial fibrillation"
+      }
+    ],
+    "baselines": {
+      "heart_rate_bpm": 80,
+      "bp_systolic": 135,
+      "bp_diastolic": 82,
+      "gait_speed_ms": 0.70,
+      "sleep_hours": 7.5
+    }
   }
 }
