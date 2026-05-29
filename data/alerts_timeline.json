@@ -1,5 +1,22 @@
 [
   {
+    "id": "alert_1780050352",
+    "timestamp": "2026-05-29T15:55:52.323686Z",
+    "resident_id": "martha_001",
+    "resident_name": "Martha Reynolds",
+    "severity": "WARNING",
+    "message": "Significant gait velocity degradation (15.3% slowdown over 5 days) and elevated blood pressure detected for Martha Reynolds. Symptoms correlate with the recent initiation of Metoprolol Succinate and potential interaction with Lisinopril. Resident is at increased risk for falls.",
+    "actions": [
+      "Immediate clinical nursing assessment of orthostatic vitals",
+      "Ensure resident transition from sit-to-stand is slow",
+      "Monitor for dizziness/fatigue",
+      "Schedule physician review of Metoprolol/Lisinopril dosage",
+      "Increase hydration monitoring"
+    ],
+    "correlation": "15.3% gait degradation and elevated BP (142/88 mmHg) correlate with recent (May 23) initiation of Metoprolol Succinate; interaction risk between Metoprolol and Lisinopril identified.",
+    "acknowledged": false
+  },
+  {
     "id": "alert_1779887644",
     "timestamp": "2026-05-27T18:44:04.297358Z",
     "resident_id": "arthur_002",
