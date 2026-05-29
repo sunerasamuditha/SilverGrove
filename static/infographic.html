@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SilverGrove | Interactive System Infographic</title>
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-clinical: #f1f5f9;
+            --panel-bg: #ffffff;
+            --panel-inner: #f8fafc;
+            --border-color: #cbd5e1;
+            
+            --hsl-primary: 200, 95%, 35%;  /* Hospital Blue */
+            --hsl-success: 142, 76%, 36%;  /* Clinical Green */
+            --hsl-warning: 38, 92%, 40%;   /* Caution Amber */
+            --hsl-danger: 350, 84%, 48%;   /* Emergency Red */
+            --hsl-info: 187, 85%, 38%;     /* Medical Teal */
+            
+            --color-primary: hsl(var(--hsl-primary));
+            --color-success: hsl(var(--hsl-success));
+            --color-warning: hsl(var(--hsl-warning));
+            --color-danger: hsl(var(--hsl-danger));
+            --color-info: hsl(var(--hsl-info));
+            
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-clinical);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            padding: 24px;
+        }
+
+        header {
+            max-width: 1400px;
+            margin: 0 auto 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--color-primary);
+        }
+
+        .header-title p {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-top: 4px;
+        }
+
+        .btn-back {
+            background: #ffffff;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:hover {
+            background: var(--panel-inner);
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+
+        .main-layout {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        /* Sharp Clinical Cards */
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 18px;
+            border-left: 3px solid var(--color-primary);
+            padding-left: 10px;
+            font-weight: 700;
+        }
+
+        /* SCENARIO BAR */
+        .scenarios-bar {
+            grid-column: span 2;
+            background: var(--panel-bg);
+            padding: 16px 24px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto 24px;
+            width: 100%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .scenario-instructions h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .scenario-instructions p {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .scenario-btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .s-btn {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 4px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 12px;
+        }
+
+        .s-btn-normal {
+            background: rgba(22, 163, 74, 0.08);
+            color: var(--color-success);
+            border-color: rgba(22, 163, 74, 0.2);
+        }
+
+        .s-btn-normal.active {
+            background: var(--color-success);
+            color: white;
+            border-color: var(--color-success);
+        }
+
+        .s-btn-warning {
+            background: rgba(245, 158, 11, 0.08);
+            color: var(--color-warning);
+            border-color: rgba(245, 158, 11, 0.2);
+        }
+
+        .s-btn-warning.active {
+            background: var(--color-warning);
+            color: white;
+            border-color: var(--color-warning);
+        }
+
+        .s-btn-critical {
+            background: rgba(239, 68, 68, 0.08);
+            color: var(--color-danger);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .s-btn-critical.active {
+            background: var(--color-danger);
+            color: white;
+            border-color: var(--color-danger);
+        }
+
+        /* PHYSICAL ECOSYSTEM: HOME VIEW */
+        .home-view {
+            position: relative;
+            background: var(--panel-inner);
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            height: 380px;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 12px;
+            padding: 12px;
+        }
+
+        .room {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .room:hover {
+            border-color: var(--color-primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        .room-name {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .room-visual {
+            font-size: 32px;
+            align-self: center;
+        }
+
+        /* Sensor Hotspots */
+        .sensor-node {
+            position: absolute;
+            background: var(--panel-inner);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 4px 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .sensor-node:hover {
+            background: #ffffff;
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+
+        .sensor-node.active {
+            border-color: var(--color-success);
+            background: rgba(22, 163, 74, 0.06);
+            color: var(--color-success);
+        }
+
+        .s-pulse {
+            width: 6px;
+            height: 6px;
+            background-color: var(--text-secondary);
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .sensor-node.active .s-pulse {
+            background-color: var(--color-success);
+            animation: pulse-s 1.5s infinite;
+        }
+
+        /* Positioning hotspots inside rooms */
+        .node-bedroom-radar { bottom: 8px; right: 8px; }
+        .node-bathroom-occ { top: 8px; right: 8px; }
+        .node-hallway-radar { bottom: 8px; left: 8px; }
+        .node-kitchen-stove { top: 8px; right: 8px; }
+
+        /* DIGITAL AGENT CONSENSUS PIPELINE */
+        .agent-circuit {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+        }
+
+        .agent-node {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .a-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            background: var(--panel-inner);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.2s ease;
+        }
+
+        .agent-node.active .a-avatar {
+            border-color: var(--color-primary);
+            background: rgba(2, 132, 199, 0.05);
+            transform: scale(1.02);
+        }
+
+        .agent-node.completed .a-avatar {
+            border-color: var(--color-success);
+            background: rgba(22, 163, 74, 0.08);
+            color: var(--color-success);
+        }
+
+        .a-desc h4 {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .a-desc p {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* Connecting vertical line */
+        .circuit-line {
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            bottom: 20px;
+            width: 2px;
+            background: var(--border-color);
+            z-index: 1;
+        }
+
+        .circuit-progress {
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            width: 2px;
+            height: 0%;
+            background: var(--color-success);
+            z-index: 1.5;
+            transition: height 0.8s ease;
+        }
+
+        /* DEMO LOG CONSOLE */
+        .demo-console {
+            background: #0f172a;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            font-size: 10px;
+            font-family: monospace;
+            height: 120px;
+            overflow-y: auto;
+            color: #38bdf8;
+            line-height: 1.4;
+        }
+
+        .console-entry {
+            margin-bottom: 4px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        /* HIGHLIGHT PANEL FOOTER */
+        .portal-stats {
+            grid-column: span 2;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .stat-card {
+            text-align: center;
+            background: var(--panel-inner);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 12px;
+        }
+
+        .stat-val {
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* KEYFRAMES */
+        @keyframes pulse-s {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.6; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+
+    <header>
+        <div class="header-title">
+            <h1>SilverGrove Scenario Ecosystem</h1>
+            <p>Interactive Physical + Digital Platform Blueprint</p>
+        </div>
+        <a href="/" class="btn-back">← Back to Portal Dashboard</a>
+    </header>
+
+    <!-- SCENARIOS SELECTION BAR -->
+    <div class="scenarios-bar">
+        <div class="scenario-instructions">
+            <h3>Interactive Sandbox Simulators</h3>
+            <p>Select a scenario to trigger and visualize the physical sensor data routing to agent consensus loops.</p>
+        </div>
+        <div class="scenario-btn-group">
+            <button class="s-btn s-btn-normal active" id="btn-s-normal">Standard Baseline Day</button>
+            <button class="s-btn s-btn-warning" id="btn-s-warning">Mild Activity Decline</button>
+            <button class="s-btn s-btn-critical" id="btn-s-critical">Critical Polypharmacy Anomaly</button>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        
+        <!-- LEFT COLUMN: THE PHYSICAL SYSTEM -->
+        <section class="panel">
+            <h2 class="panel-title">1. Physical Ambient Home Ecosystem</h2>
+            <p style="font-size: 13px; color: var(--text-secondary);">
+                Camera-free, micro-radar health monitoring. Physical sensors monitor location, velocities, and biometrics privately.
+            </p>
+            
+            <div class="home-view" id="home-view">
+                <!-- Bedroom -->
+                <div class="room" style="grid-column: 1; grid-row: 1;">
+                    <span class="room-name">Bedroom</span>
+                    <span class="room-visual">🛏️</span>
+                    <div class="sensor-node active node-bedroom-radar" id="node-bed">
+                        <span class="s-pulse"></span> Micro-Radar Vital Node
+                    </div>
+                </div>
+
+                <!-- Bathroom -->
+                <div class="room" style="grid-column: 2; grid-row: 1;">
+                    <span class="room-name">Bathroom</span>
+                    <span class="room-visual">🚿</span>
+                    <div class="sensor-node node-bathroom-occ" id="node-bath">
+                        <span class="s-pulse"></span> Floor Presence Sensor
+                    </div>
+                </div>
+
+                <!-- Hallway -->
+                <div class="room" style="grid-column: 1; grid-row: 2;">
+                    <span class="room-name">Hallway</span>
+                    <span class="room-visual">🚪</span>
+                    <div class="sensor-node active node-hallway-radar" id="node-hall">
+                        <span class="s-pulse"></span> Speed Gate Telemetry
+                    </div>
+                </div>
+
+                <!-- Kitchen -->
+                <div class="room" style="grid-column: 2; grid-row: 2;">
+                    <span class="room-name">Kitchen</span>
+                    <span class="room-visual">🍳</span>
+                    <div class="sensor-node node-kitchen-stove" id="node-kitchen">
+                        <span class="s-pulse"></span> Appliance Thermal Link
+                    </div>
+                </div>
+            </div>
+
+            <div class="demo-console" id="console">
+                <div class="console-entry">[SYSTEM] Sandbox initialized. Click on any room sensor node to probe its telemetries.</div>
+            </div>
+        </section>
+
+        <!-- RIGHT COLUMN: THE DIGITAL SYSTEM -->
+        <section class="panel">
+            <h2 class="panel-title">2. Digital Multi-Agent Consensus Pipeline</h2>
+            <p style="font-size: 13px; color: var(--text-secondary);">
+                Active coordination of 4 ADK agents running over MCP servers to synthesize diagnostic consensus.
+            </p>
+
+            <div class="agent-circuit">
+                <div class="circuit-line"></div>
+                <div class="circuit-progress" id="circuit-progress"></div>
+
+                <!-- Agent 1: Sensory Guardian -->
+                <div class="agent-node" id="agent-s">
+                    <div class="a-avatar">🛡️</div>
+                    <div class="a-desc">
+                        <h4>Sensory Guardian Agent</h4>
+                        <p id="desc-s">Waiting for ambient sensor data ingestion...</p>
+                    </div>
+                </div>
+
+                <!-- Agent 2: Medical Compliance -->
+                <div class="agent-node" id="agent-m">
+                    <div class="a-avatar">🔬</div>
+                    <div class="a-desc">
+                        <h4>Medical Compliance Agent</h4>
+                        <p id="desc-m">Awaiting vital anomaly triggers for correlation...</p>
+                    </div>
+                </div>
+
+                <!-- Agent 3: Cognitive Companion -->
+                <div class="agent-node" id="agent-c">
+                    <div class="a-avatar">🤝</div>
+                    <div class="a-desc">
+                        <h4>Cognitive Companion Agent</h4>
+                        <p id="desc-c">Awaiting clinical correlation to generate check-in dialogue...</p>
+                    </div>
+                </div>
+
+                <!-- Agent 4: Care Coordinator -->
+                <div class="agent-node" id="agent-co">
+                    <div class="a-avatar">⚡</div>
+                    <div class="a-desc">
+                        <h4>Care Coordinator Agent</h4>
+                        <p id="desc-co">Waiting to route outbound cryptographic A2A protocol packets...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PORTAL HIGHLIGHT STATS -->
+        <footer class="panel portal-stats">
+            <div class="stat-card glass-panel-inner">
+                <div class="stat-val" id="stat-vitality" style="color: var(--color-success)">100%</div>
+                <div class="stat-label">Resident Safety Index</div>
+            </div>
+            <div class="stat-card glass-panel-inner">
+                <div class="stat-val" id="stat-latency">85ms</div>
+                <div class="stat-label">Sensor Routing Delay</div>
+            </div>
+            <div class="stat-card glass-panel-inner">
+                <div class="stat-val" id="stat-integrity" style="color: var(--color-info)">SECURE</div>
+                <div class="stat-label">Privacy Shield Mode</div>
+            </div>
+            <div class="stat-card glass-panel-inner">
+                <div class="stat-val" id="stat-a2a">4 Nodes</div>
+                <div class="stat-label">Active A2A Protocol Links</div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        const sensorLogs = {
+            "bed": { name: "Micro-Radar Bed Node", telemetry: "Heart rate: 72 bpm, Resp rate: 16 br/min. Safe sleep quality." },
+            "bath": { name: "Bathroom Presence Sensor", telemetry: "Status: Empty. Average daily usage: 4.2 bathroom visits." },
+            "hall": { name: "Hallway Speed Gate Radar", telemetry: "Gait speed: 0.85 m/s. Normal baseline pace." },
+            "kitchen": { name: "Kitchen Appliance Stove Link", telemetry: "Thermal sensor status: OFF. Safe room temperatures." }
+        };
+
+        // DOM nodes
+        const consoleEl = document.getElementById("console");
+        const progressEl = document.getElementById("circuit-progress");
+
+        // Click individual room sensor hotspots
+        document.querySelectorAll(".sensor-node").forEach(node => {
+            node.addEventListener("click", () => {
+                const sid = node.id.split("-")[1];
+                const info = sensorLogs[sid];
+                if (info) {
+                    node.classList.add("active");
+                    logToConsole(`[PROBE] Interrogating ${info.name}...`);
+                    logToConsole(`[TELEMETRY] ${info.telemetry}`);
+                    setTimeout(() => node.classList.remove("active"), 3000);
+                }
+            });
+        });
+
+        function logToConsole(msg, isHeader=false) {
+            const entry = document.createElement("div");
+            entry.className = "console-entry";
+            if (isHeader) {
+                entry.style.color = "white";
+                entry.style.fontWeight = "bold";
+            }
+            entry.innerText = msg;
+            consoleEl.appendChild(entry);
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        // SCENARIOS FLOW ENGINE
+        const btnNormal = document.getElementById("btn-s-normal");
+        const btnWarning = document.getElementById("btn-s-warning");
+        const btnCritical = document.getElementById("btn-s-critical");
+
+        const scenarioConfigs = {
+            normal: {
+                title: "Scenario: Standard Baseline Day",
+                sensorStatus: { bed: "active", bath: "active", hall: "active", kitchen: "active" },
+                consoleLogs: [
+                    "[SCENARIO] Booting Standard Baseline Day for Arthur Pendelton...",
+                    "[SENSOR] Bed Micro-Radar reporting normal resting heart rate (68 bpm).",
+                    "[SENSOR] Hallway Speed Gate registers pace at 0.84 m/s (baseline: 0.85 m/s).",
+                    "[AGENT] Sensory Guardian analyzes vital streams: Normal, no anomalies flagged.",
+                    "[SYSTEM] Escalation pipeline halted. Status: Safe and sound."
+                ],
+                agents: {
+                    s: { class: "completed", desc: "Sensory Guardian: Checked. No vital/gait anomalies detected." },
+                    m: { class: "", desc: "Medical Compliance: Idle (No vital triggers)." },
+                    c: { class: "", desc: "Cognitive Companion: Idle." },
+                    co: { class: "", desc: "Care Coordinator: Idle." }
+                },
+                progress: "0%",
+                stats: { vitality: "100%", vitalityColor: "var(--color-success)", latency: "42ms" }
+            },
+            warning: {
+                title: "Scenario: Mild Activity Decline",
+                sensorStatus: { bed: "active", bath: "active", hall: "active", kitchen: "active" },
+                consoleLogs: [
+                    "[SCENARIO] Booting Mild Activity Decline simulation...",
+                    "[SENSOR] Hallway Speed Gate registers average gait speed at 0.73 m/s (-14.1% below baseline).",
+                    "[AGENT] Sensory Guardian triggers ADK warning: 'Mild gait speed deceleration detected.'",
+                    "[AGENT] Medical Compliance correlated gait speed change against Donepezil prescription (No interactions found).",
+                    "[AGENT] Cognitive Companion drafts checking dialogue for Arthur: 'I noticed you walked a little slower today.'",
+                    "[AGENT] Care Coordinator dispatches Care Notification to family portal."
+                ],
+                agents: {
+                    s: { class: "completed", desc: "Sensory Guardian: Warning flagged. Gait deceleration -14.1%." },
+                    m: { class: "completed", desc: "Medical Compliance: Donepezil checked. No pharmaceutical clash." },
+                    c: { class: "completed", desc: "Cognitive Companion: Warm conversational orientation guide drafted." },
+                    co: { class: "completed", desc: "Care Coordinator: Advisory Care Alert packaged and pushed to B2C dashboard." }
+                },
+                progress: "100%",
+                stats: { vitality: "92%", vitalityColor: "var(--color-warning)", latency: "88ms" }
+            },
+            critical: {
+                title: "Scenario: Critical Polypharmacy Anomaly",
+                sensorStatus: { bed: "active", bath: "active", hall: "active", kitchen: "active" },
+                consoleLogs: [
+                    "[SCENARIO] Booting Critical Polypharmacy Anomaly simulation...",
+                    "[SENSOR] Bedroom vital telemetry flags BP surge at 144/90 mmHg.",
+                    "[SENSOR] Speed Gate registers gait velocity drop to 0.71 m/s (-16.4% change, severe).",
+                    "[AGENT] Sensory Guardian escalates anomaly: 'BP elevated and gait speed slowdown exceeds -15.0% threshold.'",
+                    "[AGENT] Medical Compliance runs FDA check: Correlates beta-blocker Metoprolol prescribed 4 days ago with sudden orthostatic hypotensive risk.",
+                    "[AGENT] Cognitive Companion composes critical safety warning: 'Drink water immediately and rise slowly from chairs.'",
+                    "[AGENT] Care Coordinator issues emergency alert. Routes encrypted B2B packet to Primary Care Physician."
+                ],
+                agents: {
+                    s: { class: "completed", desc: "Sensory Guardian: CRITICAL. BP 144/90, Gait slow -16.4%." },
+                    m: { class: "completed", desc: "Medical Compliance: FDA lookup correlates Metoprolol introduction with severe fall/dizziness risks." },
+                    c: { class: "completed", desc: "Cognitive Companion: Prepared urgent check-in dialogue advising water intake and slow standing." },
+                    co: { class: "completed", desc: "Care Coordinator: Cryptographic emergency alert pushed to Physician and Family gateways." }
+                },
+                progress: "100%",
+                stats: { vitality: "68%", vitalityColor: "var(--color-danger)", latency: "112ms" }
+            }
+        };
+
+        async function runScenario(scenarioKey) {
+            // Manage button active classes
+            btnNormal.classList.remove("active");
+            btnWarning.classList.remove("active");
+            btnCritical.classList.remove("active");
+            
+            if (scenarioKey === 'normal') btnNormal.classList.add("active");
+            if (scenarioKey === 'warning') btnWarning.classList.add("active");
+            if (scenarioKey === 'critical') btnCritical.classList.add("active");
+
+            const conf = scenarioConfigs[scenarioKey];
+            consoleEl.innerHTML = "";
+            logToConsole(conf.title, true);
+            
+            // Reset agent node classes
+            document.querySelectorAll(".agent-node").forEach(n => {
+                n.className = "agent-node";
+            });
+            progressEl.style.height = "0%";
+
+            // Staggered console and progress logs rendering
+            for (let i = 0; i < conf.consoleLogs.length; i++) {
+                logToConsole(conf.consoleLogs[i]);
+                
+                if (scenarioKey === 'normal') {
+                    if (i === 1) {
+                        setNodeClass("agent-s", "completed", conf.agents.s.desc);
+                    }
+                } else {
+                    if (i === 2) {
+                        setNodeClass("agent-s", "completed", conf.agents.s.desc);
+                        progressEl.style.height = "25%";
+                    }
+                    if (i === 3) {
+                        setNodeClass("agent-m", "completed", conf.agents.m.desc);
+                        progressEl.style.height = "55%";
+                    }
+                    if (i === 4) {
+                        setNodeClass("agent-c", "completed", conf.agents.c.desc);
+                        progressEl.style.height = "80%";
+                    }
+                    if (i === 5) {
+                        setNodeClass("agent-co", "completed", conf.agents.co.desc);
+                        progressEl.style.height = "100%";
+                    }
+                }
+                await delay(1000);
+            }
+
+            // Update stats
+            document.getElementById("stat-vitality").innerText = conf.stats.vitality;
+            document.getElementById("stat-vitality").style.color = conf.stats.vitalityColor;
+            document.getElementById("stat-latency").innerText = conf.stats.latency;
+        }
+
+        function setNodeClass(id, className, descText) {
+            const el = document.getElementById(id);
+            el.className = `agent-node ${className}`;
+            const key = id.split("-")[1];
+            document.getElementById(`desc-${key}`).innerText = descText;
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Listeners for scenarios
+        btnNormal.addEventListener("click", () => runScenario('normal'));
+        btnWarning.addEventListener("click", () => runScenario('warning'));
+        btnCritical.addEventListener("click", () => runScenario('critical'));
+
+        // Boot initial baseline scenario
+        setTimeout(() => runScenario('normal'), 500);
+    </script>
+</body>
+</html>
