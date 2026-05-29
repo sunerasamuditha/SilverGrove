@@ -414,7 +414,7 @@
   <script>
     // Configuration utility
     function getApiBaseUrl() {
-      const savedUrl = localStorage.getItem('silvergrove_backend_url');
+      const savedUrl = localStorage.getItem('silvergrove_api_url');
       if (savedUrl) return savedUrl.replace(/\/$/, '');
       return '';
     }
