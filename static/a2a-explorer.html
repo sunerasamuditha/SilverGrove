@@ -317,22 +317,33 @@
 </head>
 <body>
 
-  <header class="glass-header">
-    <div class="brand">
-      <div class="brand-logo"></div>
-      <div class="brand-title">SILVERGROVE A2A</div>
+  <header class="main-header glass-panel" style="margin: 0; border-radius: 0; border-left: none; border-right: none; border-top: none;">
+    <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+        <div class="logo-area">
+            <div class="logo-icon" style="display: flex; align-items: center; justify-content: center;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                </svg>
+            </div>
+            <div class="logo-text">
+                <h1 style="margin: 0;">SilverGrove</h1>
+                <p style="margin: 0; font-size: 10px; color: var(--color-text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;">Ambient Assisted Living Multi-Agent System</p>
+            </div>
+        </div>
+
+        <nav class="nav-links">
+            <a href="index.html">Command Center</a>
+            <a href="a2a-explorer.html" class="active">A2A Explorer</a>
+            <a href="infographic.html">Scenario Infographic</a>
+        </nav>
     </div>
 
-    <nav class="nav-links">
-      <a href="index.html" class="nav-link">Command Center</a>
-      <a href="a2a-explorer.html" class="nav-link active">A2A Explorer</a>
-      <a href="infographic.html" class="nav-link">Scenario Infographic</a>
-      
-      <div class="backend-status">
-        <div id="statusDot" class="status-indicator"></div>
+    <div class="status-bar">
+      <div class="backend-status" style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; background: var(--panel-inner); border: 1px solid var(--border-color); padding: 4px 10px; border-radius: 4px; color: var(--color-text-secondary);">
+        <div id="statusDot" class="status-indicator" style="width: 6px; height: 6px; border-radius: 50%; background: #ef4444;"></div>
         <span id="statusText">Disconnected</span>
       </div>
-    </nav>
+    </div>
   </header>
 
   <div class="explorer-container">
