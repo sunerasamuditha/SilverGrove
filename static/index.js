@@ -683,7 +683,11 @@ document.getElementById('generate-pdf-btn')?.addEventListener('click', async () 
             // Also attempt to open the URL if it contains one
             const urlMatch = data.message.match(/URL:\s*(.*)/);
             if(urlMatch && urlMatch[1]) {
-                window.open(urlMatch[1].trim(), '_blank');
+                let finalUrl = urlMatch[1].trim();
+                if(finalUrl.startsWith('/')) {
+                    finalUrl = getApiBaseUrl() + finalUrl;
+                }
+                window.open(finalUrl, '_blank');
             }
         } else { 
             alert('Error: ' + data.detail); 

@@ -187,14 +187,9 @@ analyst_runner = Runner(agent=clinical_analyst_agent, app_name="silvergrove", se
 @app.post("/api/reports/generate")
 def generate_report(req: ReportRequest):
     try:
-        prompt = (
-            f"Analyze the historical health timeline for resident '{req.resident_id}'. "
-            "Generate a comprehensive clinical summary and export it to a PDF report. "
-            "Return the message containing the URL of the generated PDF."
-        )
-        session_id = f"analyst_{req.resident_id}"
-        response_text = invoke_agent(analyst_runner, prompt, f"user_{req.resident_id}", session_id)
-        return {"status": "success", "message": response_text}
+        from services.pdf_service import generate_local_pdf
+        message = generate_local_pdf(req.resident_id)
+        return {"status": "success", "message": message}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
