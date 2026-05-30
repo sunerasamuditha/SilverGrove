@@ -51,11 +51,11 @@ def get_resident_profile_db(resident_id: str) -> Dict[str, Any]:
             doc = doc_ref.get()
             if doc.exists:
                 return doc.to_dict()
-            logger.info(f"[Firestore] Profile {resident_id} not found in database. Trying local fallback.")
+            logger.info(f"[Firestore] Profile {resident_id} not found in database. Reading from local storage.")
         except Exception as e:
             logger.error(f"[Firestore Error] Failed to read resident profile: {e}")
             
-    # Local fallback
+    # Local file storage
     residents_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "residents.json")
     try:
         with open(residents_file, "r") as f:
@@ -76,7 +76,7 @@ def save_resident_profile_db(resident_id: str, data: Dict[str, Any]):
         except Exception as e:
             logger.error(f"[Firestore Error] Failed to save profile: {e}")
             
-    # Local fallback
+    # Local file storage
     residents_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "residents.json")
     try:
         residents = {}
@@ -87,7 +87,7 @@ def save_resident_profile_db(resident_id: str, data: Dict[str, Any]):
         with open(residents_file, "w") as f:
             json.dump(residents, f, indent=2)
     except Exception as e:
-        logger.error(f"[Local Fallback Error] Failed to write profile: {e}")
+        logger.error(f"[Local Storage Error] Failed to write profile: {e}")
 
 def get_alerts_db() -> List[Dict[str, Any]]:
     """
@@ -104,14 +104,14 @@ def get_alerts_db() -> List[Dict[str, Any]]:
         except Exception as e:
             logger.error(f"[Firestore Error] Failed to load alerts: {e}")
             
-    # Local fallback
+    # Local file storage
     alerts_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "alerts_timeline.json")
     try:
         if os.path.exists(alerts_file):
             with open(alerts_file, "r") as f:
                 return json.load(f)
     except Exception as e:
-        logger.error(f"[Local Fallback Error] Failed to read alerts: {e}")
+        logger.error(f"[Local Storage Error] Failed to read alerts: {e}")
     return []
 
 def save_alert_db(alert: Dict[str, Any]):
@@ -126,7 +126,7 @@ def save_alert_db(alert: Dict[str, Any]):
         except Exception as e:
             logger.error(f"[Firestore Error] Failed to save alert: {e}")
             
-    # Local fallback
+    # Local file storage
     alerts_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "alerts_timeline.json")
     try:
         alerts = []
@@ -137,7 +137,7 @@ def save_alert_db(alert: Dict[str, Any]):
         with open(alerts_file, "w") as f:
             json.dump(alerts, f, indent=2)
     except Exception as e:
-        logger.error(f"[Local Fallback Error] Failed to write alert: {e}")
+        logger.error(f"[Local Storage Error] Failed to write alert: {e}")
 
 def clear_alerts_db():
     """
@@ -159,13 +159,13 @@ def clear_alerts_db():
         except Exception as e:
             logger.error(f"[Firestore Error] Failed to clear alerts: {e}")
             
-    # Local fallback
+    # Local file storage
     alerts_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "alerts_timeline.json")
     try:
         with open(alerts_file, "w") as f:
             json.dump([], f)
     except Exception as e:
-        logger.error(f"[Local Fallback Error] Failed to clear alerts: {e}")
+        logger.error(f"[Local Storage Error] Failed to clear alerts: {e}")
 
 
 # --- Pub/Sub Messaging Operations ---
@@ -185,5 +185,5 @@ def publish_alert_event(alert: Dict[str, Any]):
         except Exception as e:
             logger.error(f"[PubSub Error] Failed to publish message: {e}")
     else:
-        logger.info(f"[Local PubSub Mock] Event alert {alert['id']} broadcasted to local message channel.")
-        return "local_mock_id"
+        logger.info(f"[Local Event Bus] Alert {alert['id']} dispatched to local message channel.")
+        return f"local_{alert['id']}"

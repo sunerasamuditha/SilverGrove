@@ -19,6 +19,10 @@ from tools.vitals_tools import get_resident_vitals, get_resident_details
 from tools.alert_tools import get_alerts_timeline, clear_alerts_timeline
 from tools.trace_events import TraceCollector
 from a2a.agent_cards import get_root_agent_card, get_all_agent_cards
+from mcp_servers.vitals_server import set_vitals_frozen
+from agents.clinical_analyst import clinical_analyst_agent
+from google.adk.runners import Runner
+from agent import session_service, invoke_agent
 
 # Initialize FastAPI App
 app = FastAPI(
@@ -102,9 +106,12 @@ def get_resident_fhir_bundle(resident_id: str):
 @app.post("/api/residents/{resident_id}/check")
 def trigger_agent_check(resident_id: str):
     try:
+        set_vitals_frozen(resident_id, True)
         trajectory = orchestrator.run_health_check(resident_id)
+        set_vitals_frozen(resident_id, False)
         return trajectory
     except Exception as e:
+        set_vitals_frozen(resident_id, False)
         raise HTTPException(status_code=500, detail=str(e))
 
 # Endpoint: Stream End-to-End Multi-Agent Health Check in Real-time
@@ -126,10 +133,12 @@ def stream_agent_check(resident_id: str):
         
         def run_check():
             try:
+                set_vitals_frozen(resident_id, True)
                 orchestrator.run_health_check(resident_id, collector)
             except Exception as e:
                 collector.log("ORCHESTRATOR", "ERROR", f"Fatal exception during multi-agent check: {str(e)}")
             finally:
+                set_vitals_frozen(resident_id, False)
                 loop.call_soon_threadsafe(queue.put_nowait, "DONE")
                 
         thread = threading.Thread(target=run_check)
@@ -169,6 +178,20 @@ def get_alerts():
 def clear_alerts():
     clear_alerts_timeline()
     return {"status": "success", "message": "Alert timeline cleared successfully."}
+
+class ReportRequest(BaseModel):
+    resident_id: str
+
+analyst_runner = Runner(agent=clinical_analyst_agent, app_name="silvergrove", session_service=session_service, auto_create_session=True)
+
+@app.post("/api/reports/generate")
+def generate_report(req: ReportRequest):
+    try:
+        from services.pdf_service import generate_local_pdf
+        message = generate_local_pdf(req.resident_id)
+        return {"status": "success", "message": message}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # Serve High-Fidelity UI Static Files
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")

@@ -11,10 +11,11 @@
       font-family: 'Inter', -apple-system, sans-serif;
       background-color: var(--bg-clinical);
       color: var(--color-text-primary);
-      margin: 0;
-      padding: 0;
       min-height: 100vh;
-      overflow-x: hidden;
+      padding: 16px;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
     }
 
     .glass-header {
@@ -82,6 +83,8 @@
       display: flex;
       flex-direction: column;
       gap: 20px;
+      flex: 1;
+      overflow-y: auto;
     }
 
     .page-title-section {
@@ -316,24 +319,46 @@
   </style>
 </head>
 <body>
+  <!-- Background Gradients -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
 
-  <header class="glass-header">
-    <div class="brand">
-      <div class="brand-logo"></div>
-      <div class="brand-title">SILVERGROVE A2A</div>
-    </div>
+  <div class="portal-container">
+    <!-- HEADER -->
+    <header class="main-header glass-panel">
+      <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+          <div class="logo-area">
+              <div class="logo-icon" style="display: flex; align-items: center; justify-content: center; height: 64px; width: 128px; border-radius: 4px; overflow: hidden; background: transparent;">
+                  <img src="logo.png" alt="SilverGrove Logo" style="height: 100%; width: 100%; object-fit: contain;">
+              </div>
+              <div class="logo-text">
+                  <h1>SilverGrove</h1>
+                  <p>Ambient Assisted Living Multi-Agent System</p>
+              </div>
+          </div>
 
-    <nav class="nav-links">
-      <a href="index.html" class="nav-link">Command Center</a>
-      <a href="a2a-explorer.html" class="nav-link active">A2A Explorer</a>
-      <a href="infographic.html" class="nav-link">Scenario Infographic</a>
-      
-      <div class="backend-status">
-        <div id="statusDot" class="status-indicator"></div>
-        <span id="statusText">Disconnected</span>
+          <nav class="nav-links">
+              <a href="index.html">Command Center</a>
+              <a href="a2a-explorer.html" class="active">A2A Explorer</a>
+              <a href="simulation.html">Simulation</a>
+          </nav>
       </div>
-    </nav>
-  </header>
+
+      <div class="status-bar">
+        <div class="connection-badge" id="conn-badge">
+          <div class="connection-dot" id="conn-dot"></div>
+          <span id="conn-text">Checking...</span>
+        </div>
+        <button id="config-backend-btn" class="btn btn-secondary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            Connect Backend
+        </button>
+        <button id="clear-btn" class="btn btn-secondary">Clear Alerts</button>
+      </div>
+    </header>
 
   <div class="explorer-container">
     <div class="page-title-section">
@@ -425,6 +450,38 @@
     </div>
   </div>
 
+  </div>
+
+  <!-- Backend Config Modal -->
+  <div id="modal-config" class="modal hidden">
+      <div class="modal-content glass-panel" style="max-width: 450px;">
+          <div class="modal-header">
+              <span class="modal-warning-icon" style="display:flex;align-items:center;justify-content:center;color:var(--color-primary);">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                  </svg>
+              </span>
+              <h2>Connect Cloud Run Backend</h2>
+          </div>
+          <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;margin-top:10px;">
+              <p style="font-size:13px;color:var(--color-text-muted);">
+                  Specify your Google Cloud Run API Gateway URL to connect this frontend with your active agents.
+              </p>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                  <label style="font-size:11px;font-weight:700;color:var(--color-text-primary);text-transform:uppercase;">Cloud Run Service URL:</label>
+                  <input type="text" id="input-backend-url" placeholder="https://silvergrove-a2a-xxxx-uc.a.run.app" style="background:var(--panel-inner);border:1px solid var(--border-color);border-radius:4px;padding:10px;color:var(--color-text-primary);font-family:monospace;font-size:12px;outline:none;width:100%;">
+              </div>
+              <div id="config-status" style="font-size:11px;font-weight:600;min-height:16px;"></div>
+          </div>
+          <div class="modal-footer" style="display:flex;gap:10px;margin-top:10px;">
+              <button id="config-reset-btn" class="btn btn-secondary">Use Localhost</button>
+              <button id="config-connect-btn" class="btn btn-primary">Connect Backend</button>
+              <button id="config-close-btn" class="btn btn-secondary">Close</button>
+          </div>
+      </div>
+  </div>
+
   <script>
     // Configuration utility
     function getApiBaseUrl() {
@@ -434,25 +491,87 @@
     }
 
     // Check backend link
-    function checkBackendConnection() {
-      const baseUrl = getApiBaseUrl();
-      const dot = document.getElementById('statusDot');
-      const text = document.getElementById('statusText');
+    const dot = document.getElementById('conn-dot');
+    const text = document.getElementById('conn-text');
 
-      fetch(`${baseUrl}/api/alerts`)
-        .then(res => {
-          if (res.ok) {
-            dot.className = 'status-indicator online';
-            text.textContent = baseUrl ? 'Cloud Run Connected' : 'Local Host Connected';
-          } else {
-            throw new Error();
-          }
-        })
-        .catch(() => {
-          dot.className = 'status-indicator';
-          text.textContent = 'Offline (Check connection settings)';
-        });
+    async function checkBackendConnection() {
+      const baseUrl = getApiBaseUrl();
+      try {
+        const res = await fetch(`${baseUrl}/api/alerts`);
+        if (res.ok) {
+          dot.classList.add('online');
+          text.textContent = baseUrl ? 'Cloud Run Connected' : 'Localhost Connected';
+        } else {
+          throw new Error();
+        }
+      } catch {
+        dot.classList.remove('online');
+        text.textContent = 'Disconnected';
+      }
     }
+
+    // Modal interaction handlers
+    const modalConfig = document.getElementById('modal-config');
+    const inputUrl = document.getElementById('input-backend-url');
+    const configStatus = document.getElementById('config-status');
+
+    document.getElementById('config-backend-btn').addEventListener('click', () => {
+        inputUrl.value = getApiBaseUrl();
+        configStatus.innerText = "";
+        modalConfig.classList.remove('hidden');
+    });
+
+    document.getElementById('config-close-btn').addEventListener('click', () => {
+        modalConfig.classList.add('hidden');
+    });
+
+    document.getElementById('config-reset-btn').addEventListener('click', () => {
+        localStorage.removeItem('silvergrove_api_url');
+        configStatus.style.color = 'var(--color-success)';
+        configStatus.innerText = 'Switched to Localhost backend!';
+        checkBackendConnection();
+        setTimeout(() => modalConfig.classList.add('hidden'), 800);
+    });
+
+    document.getElementById('config-connect-btn').addEventListener('click', async () => {
+        let url = inputUrl.value.trim();
+        if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+            url = 'https://' + url;
+        }
+        configStatus.style.color = '#ef4444';
+        configStatus.innerText = 'Testing link...';
+
+        try {
+            const testUrl = url ? url.replace(/\/$/, '') : '';
+            const res = await fetch(`${testUrl}/api/alerts`);
+            if (res.ok) {
+                localStorage.setItem('silvergrove_api_url', testUrl);
+                configStatus.style.color = 'var(--color-success)';
+                configStatus.innerText = 'Connected successfully!';
+                checkBackendConnection();
+                setTimeout(() => modalConfig.classList.add('hidden'), 800);
+            } else {
+                throw new Error();
+            }
+        } catch {
+            configStatus.innerText = 'Link check failed. Ensure service is active and CORs are open.';
+        }
+    });
+
+    // Clear alerts button support
+    document.getElementById('clear-btn').addEventListener('click', async () => {
+        const baseUrl = getApiBaseUrl();
+        try {
+            const res = await fetch(`${baseUrl}/api/alerts`, { method: 'DELETE' });
+            if (res.ok) {
+                alert('Alerts cleared successfully!');
+            } else {
+                throw new Error();
+            }
+        } catch (err) {
+            alert('Failed to clear alerts. Make sure the backend is active.');
+        }
+    });
 
     const jsonDisplay = document.getElementById('jsonDisplay');
     const viewerTitle = document.getElementById('viewerTitle');
@@ -501,7 +620,7 @@
 
     // Init
     checkBackendConnection();
-    setInterval(checkBackendConnection, 5000);
+    setInterval(checkBackendConnection, 8000);
   </script>
 </body>
 </html>

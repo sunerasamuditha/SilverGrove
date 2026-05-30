@@ -6,6 +6,8 @@ let activeResidentId = null;
 let sseSource = null;
 let currentFilter = 'all';
 let allLoggedEvents = [];
+let vitalsPollingInterval = null;
+let isHealthCheckRunning = false;
 
 // Accumulated trajectory data from SSE events
 let liveTrajectory = {
@@ -196,30 +198,56 @@ async function selectResident(residentId) {
             medsList.appendChild(li);
         });
 
-        document.getElementById("vital-hr").innerText = v.telemetry.heart_rate_bpm;
-        document.getElementById("base-hr").innerText = v.baselines.heart_rate_bpm;
-        document.getElementById("vital-bp").innerText = `${v.telemetry.bp_systolic}/${v.telemetry.bp_diastolic}`;
-        document.getElementById("bp-deviation").innerText = `Baseline: ${v.baselines.bp_systolic}/${v.baselines.bp_diastolic}`;
-        document.getElementById("vital-gait").innerText = v.telemetry.gait_speed_ms;
-        document.getElementById("gait-deviation").innerText = `Baseline: ${v.baselines.gait_speed_ms} m/s`;
-        document.getElementById("vital-sleep").innerText = v.telemetry.sleep_hours;
-        document.getElementById("base-sleep").innerText = v.baselines.sleep_hours;
-        document.getElementById("vital-occupancy").innerText = v.telemetry.room_occupancy.replace('_', ' ').toUpperCase();
-
-        const bpCard = document.getElementById("card-bp");
-        const gaitCard = document.getElementById("card-gait");
-        bpCard.classList.remove("anomaly-alert");
-        gaitCard.classList.remove("anomaly-alert");
-
-        if (v.status === "ANOMALY_DETECTED") {
-            if (v.telemetry.bp_systolic >= 140 || v.telemetry.bp_systolic <= 100) bpCard.classList.add("anomaly-alert");
-            if (v.gait_change_percent <= -15.0) gaitCard.classList.add("anomaly-alert");
-        }
+        updateVitalsDOM(v);
+        startVitalsPolling();
     } catch (e) {
         console.error("Error fetching resident details:", e);
     }
 }
 
+function updateVitalsDOM(v) {
+    document.getElementById("vital-hr").innerText = v.telemetry.heart_rate_bpm;
+    document.getElementById("base-hr").innerText = v.baselines.heart_rate_bpm;
+    document.getElementById("vital-bp").innerText = `${v.telemetry.bp_systolic}/${v.telemetry.bp_diastolic}`;
+    document.getElementById("bp-deviation").innerText = `Baseline: ${v.baselines.bp_systolic}/${v.baselines.bp_diastolic}`;
+    document.getElementById("vital-gait").innerText = v.telemetry.gait_speed_ms;
+    document.getElementById("gait-deviation").innerText = `Baseline: ${v.baselines.gait_speed_ms} m/s`;
+    document.getElementById("vital-sleep").innerText = v.telemetry.sleep_hours;
+    document.getElementById("base-sleep").innerText = v.baselines.sleep_hours;
+    document.getElementById("vital-occupancy").innerText = v.telemetry.room_occupancy.replace('_', ' ').toUpperCase();
+
+    const bpCard = document.getElementById("card-bp");
+    const gaitCard = document.getElementById("card-gait");
+    bpCard.classList.remove("anomaly-alert");
+    gaitCard.classList.remove("anomaly-alert");
+
+    if (v.status === "ANOMALY_DETECTED") {
+        if (v.telemetry.bp_systolic >= 140 || v.telemetry.bp_systolic <= 100) bpCard.classList.add("anomaly-alert");
+        if (v.gait_change_percent <= -15.0) gaitCard.classList.add("anomaly-alert");
+    }
+}
+
+function startVitalsPolling() {
+    stopVitalsPolling();
+    vitalsPollingInterval = setInterval(async () => {
+        if (!activeResidentId || isHealthCheckRunning) return;
+        try {
+            const res = await fetch(getApiBaseUrl() + `/api/residents/${activeResidentId}`);
+            if (!res.ok) return;
+            const data = await res.json();
+            updateVitalsDOM(data.vitals);
+        } catch (e) {
+            console.error("Polling error:", e);
+        }
+    }, 2000);
+}
+
+function stopVitalsPolling() {
+    if (vitalsPollingInterval) {
+        clearInterval(vitalsPollingInterval);
+        vitalsPollingInterval = null;
+    }
+}
 // ============================================================
 // AGENT WORKSPACE
 // ============================================================
@@ -274,6 +302,9 @@ function triggerAgentCheck() {
     btn.disabled = true;
     btn.innerText = "Agents Running...";
 
+    isHealthCheckRunning = true;
+    stopVitalsPolling();
+
     // Reset everything
     resetAgentWorkspace();
     clearTerminalLogs();
@@ -321,6 +352,9 @@ function triggerAgentCheck() {
         btn.disabled = false;
         btn.innerText = "Run Multi-Agent Health Check";
         document.getElementById('terminal-status').textContent = 'silvergrove://complete';
+
+        isHealthCheckRunning = false;
+        startVitalsPolling();
 
         // Refresh alerts after completion
         initAlerts();
@@ -394,14 +428,6 @@ function processAgentEvent(evt) {
         }
     }
 
-    // Handle FALLBACK events (when LLM retries are exhausted)
-    if (type === 'FALLBACK') {
-        if (agent === 'SENSORY_GUARDIAN') setAgentStatus('sensory', 'Fallback Active', 'status-running');
-        if (agent === 'MEDICAL_COMPLIANCE') setAgentStatus('compliance', 'Fallback Active', 'status-running');
-        if (agent === 'COGNITIVE_COMPANION') setAgentStatus('companion', 'Fallback Active', 'status-running');
-        if (agent === 'CARE_COORDINATOR') setAgentStatus('coordinator', 'Fallback Active', 'status-running');
-    }
-
     // Handle TOOL_CALL events
     if (type === 'TOOL_CALL') {
         if (agent === 'SENSORY_GUARDIAN') setAgentStatus('sensory', 'Calling Tools', 'status-running');
@@ -409,12 +435,25 @@ function processAgentEvent(evt) {
         if (agent === 'CARE_COORDINATOR') setAgentStatus('coordinator', 'Calling Tools', 'status-running');
     }
 
-    // Handle ERROR events
+    // Handle ERROR events -- display transparent error state with details
     if (type === 'ERROR') {
-        if (agent === 'SENSORY_GUARDIAN' || evt.message.includes('Sensory')) setAgentStatus('sensory', 'Error', 'status-failed');
-        if (agent === 'MEDICAL_COMPLIANCE' || evt.message.includes('Medical')) setAgentStatus('compliance', 'Error', 'status-failed');
-        if (agent === 'COGNITIVE_COMPANION' || evt.message.includes('Companion')) setAgentStatus('companion', 'Error', 'status-failed');
-        if (agent === 'CARE_COORDINATOR' || evt.message.includes('Coordinator')) setAgentStatus('coordinator', 'Error', 'status-failed');
+        const errorDetail = `<p style="color:var(--color-danger);font-weight:600;font-size:12px;">[ERROR] ${escapeHtml(evt.message)}</p>`;
+        if (agent === 'SENSORY_GUARDIAN' || evt.message.includes('Sensory')) {
+            setAgentStatus('sensory', 'Error', 'status-failed');
+            setAgentOutput('sensory', errorDetail);
+        }
+        if (agent === 'MEDICAL_COMPLIANCE' || evt.message.includes('Medical')) {
+            setAgentStatus('compliance', 'Error', 'status-failed');
+            setAgentOutput('compliance', errorDetail);
+        }
+        if (agent === 'COGNITIVE_COMPANION' || evt.message.includes('Companion')) {
+            setAgentStatus('companion', 'Error', 'status-failed');
+            setAgentOutput('companion', errorDetail);
+        }
+        if (agent === 'CARE_COORDINATOR' || evt.message.includes('Coordinator')) {
+            setAgentStatus('coordinator', 'Error', 'status-failed');
+            setAgentOutput('coordinator', errorDetail);
+        }
     }
 }
 
@@ -626,3 +665,44 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+
+document.getElementById('generate-pdf-btn')?.addEventListener('click', async () => { 
+    if(!activeResidentId) return; 
+    const btn = document.getElementById('generate-pdf-btn'); 
+    const origText = btn.innerHTML; 
+    btn.innerHTML = 'Generating...'; 
+    
+    // Open a blank tab immediately to bypass browser popup blocker
+    const pdfTab = window.open('about:blank', '_blank');
+    
+    try { 
+        const res = await fetch(getApiBaseUrl() + '/api/reports/generate', { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify({resident_id: activeResidentId}) 
+        }); 
+        const data = await res.json(); 
+        if(data.status === 'success') { 
+            // Also attempt to open the URL if it contains one
+            const urlMatch = data.message.match(/URL:\s*(.*)/);
+            if(urlMatch && urlMatch[1]) {
+                let finalUrl = urlMatch[1].trim();
+                if(finalUrl.startsWith('/')) {
+                    finalUrl = getApiBaseUrl() + finalUrl;
+                }
+                pdfTab.location.href = finalUrl;
+            } else {
+                pdfTab.close();
+                alert(data.message); 
+            }
+        } else { 
+            pdfTab.close();
+            alert('Error: ' + data.detail); 
+        } 
+    } catch(e) { 
+        pdfTab.close();
+        alert('Failed to generate PDF: ' + e); 
+    } finally { 
+        btn.innerHTML = origText; 
+    } 
+});

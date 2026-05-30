@@ -8,19 +8,24 @@
     --panel-inner: #f8fafc;
     --border-color: #cbd5e1;
     --border-hover: #94a3b8;
-    
+
     /* Clean Medical Theme Typographic & Functional Colors */
     --color-text-primary: #0f172a;
     --color-text-secondary: #334155;
     --color-text-muted: #64748b;
-    
+
     /* Clinical Professional HSL Palettes */
-    --hsl-primary: 200, 95%, 35%;  /* Clean Hospital Blue */
-    --hsl-success: 142, 76%, 36%;  /* Clinical Green / Stable */
-    --hsl-warning: 38, 92%, 40%;   /* Cautionary Amber */
-    --hsl-danger: 350, 84%, 48%;   /* Emergency Red / Anomaly */
-    --hsl-info: 187, 85%, 38%;     /* Medical Teal */
-    
+    --hsl-primary: 200, 95%, 35%;
+    /* Clean Hospital Blue */
+    --hsl-success: 142, 76%, 36%;
+    /* Clinical Green / Stable */
+    --hsl-warning: 38, 92%, 40%;
+    /* Cautionary Amber */
+    --hsl-danger: 350, 84%, 48%;
+    /* Emergency Red / Anomaly */
+    --hsl-info: 187, 85%, 38%;
+    /* Medical Teal */
+
     --color-primary: hsl(var(--hsl-primary));
     --color-success: hsl(var(--hsl-success));
     --color-warning: hsl(var(--hsl-warning));
@@ -45,7 +50,10 @@ body {
 }
 
 /* Premium Medical Typography Headers */
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
     font-family: 'Outfit', sans-serif;
     font-weight: 600;
     letter-spacing: -0.01em;
@@ -56,7 +64,8 @@ h1, h2, h3, h4 {
 .glass-panel {
     background: var(--panel-bg);
     border: 1px solid var(--border-color);
-    border-radius: 4px; /* Crisp minimal rounded corners for high-end medical vibe */
+    border-radius: 4px;
+    /* Crisp minimal rounded corners for high-end medical vibe */
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     transition: all 0.2s ease;
 }
@@ -76,13 +85,15 @@ h1, h2, h3, h4 {
 
 /* Portal Container Structure */
 .portal-container {
-    max-width: 1680px;
+    max-width: 1920px;
     margin: 0 auto;
     width: 100%;
     display: flex;
     flex-direction: column;
     gap: 16px;
     flex-grow: 1;
+    height: calc(100vh - 32px);
+    overflow: hidden;
 }
 
 /* MAIN HEADER */
@@ -207,16 +218,25 @@ h1, h2, h3, h4 {
 
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 280px 1fr 340px;
+    grid-template-columns: 260px 1fr 400px;
     gap: 16px;
     flex-grow: 1;
     min-height: 0;
+    height: calc(100vh - 110px);
+    max-height: calc(100vh - 110px);
 }
 
 /* Responsive Overrides */
+/* Ultra-wide screens: expand even more */
+@media (min-width: 1800px) {
+    .dashboard-grid {
+        grid-template-columns: 280px 1fr 460px;
+    }
+}
+
 @media (max-width: 1400px) {
     .dashboard-grid {
-        grid-template-columns: 260px 1fr 300px;
+        grid-template-columns: 240px 1fr 340px;
     }
 }
 
@@ -225,7 +245,7 @@ h1, h2, h3, h4 {
         grid-template-columns: 280px 1fr;
         grid-template-rows: auto;
     }
-    
+
     .panel-right {
         grid-column: span 2;
         height: 400px;
@@ -237,15 +257,17 @@ h1, h2, h3, h4 {
         grid-template-columns: 1fr;
         grid-template-rows: auto;
     }
-    
-    .panel-left, .workspace-panel, .panel-right {
+
+    .panel-left,
+    .workspace-panel,
+    .panel-right {
         grid-column: span 1;
     }
-    
+
     .panel-left {
         height: auto;
     }
-    
+
     .vitals-grid {
         grid-template-columns: repeat(3, 1fr) !important;
     }
@@ -255,22 +277,22 @@ h1, h2, h3, h4 {
     body {
         padding: 8px;
     }
-    
+
     .main-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
     }
-    
+
     .status-bar {
         width: 100%;
         justify-content: space-between;
     }
-    
+
     .vitals-grid {
         grid-template-columns: 1fr !important;
     }
-    
+
     .agents-grid {
         grid-template-columns: 1fr !important;
     }
@@ -395,6 +417,7 @@ h1, h2, h3, h4 {
     flex-direction: column;
     gap: 16px;
     min-height: 0;
+    overflow-y: auto;
 }
 
 .vitals-container {
@@ -473,7 +496,8 @@ h1, h2, h3, h4 {
 /* AGENTS SECTION */
 .agents-container {
     padding: 16px;
-    flex-grow: 1;
+    flex-grow: 0;
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -483,7 +507,6 @@ h1, h2, h3, h4 {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
-    flex-grow: 1;
     min-height: 0;
 }
 
@@ -491,10 +514,10 @@ h1, h2, h3, h4 {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    height: 100%;
     background: #ffffff;
     border: 1px solid var(--border-color);
     border-radius: 4px;
+    height: 450px;
 }
 
 .agent-badge {
@@ -564,11 +587,12 @@ h1, h2, h3, h4 {
     border: 1px solid var(--border-color);
     border-radius: 2px;
     padding: 10px;
-    flex-grow: 1;
+    flex: 1 1 0;
     overflow-y: auto;
     font-size: 11px;
     line-height: 1.5;
     color: var(--color-text-secondary);
+    height: 500px;
 }
 
 .placeholder-text {
@@ -583,6 +607,9 @@ h1, h2, h3, h4 {
     padding: 14px 16px;
     background: #ffffff;
     border: 1px solid var(--border-color);
+    max-height: 220px;
+    overflow-y: auto;
+    flex-shrink: 0;
 }
 
 .empathy-bubble {
@@ -670,6 +697,7 @@ h1, h2, h3, h4 {
     flex-direction: column;
     flex: 1;
     overflow: hidden;
+    max-height: 100%;
 }
 
 .terminal-tab-content.active {
@@ -697,9 +725,17 @@ h1, h2, h3, h4 {
     border-radius: 50%;
 }
 
-.t-dot.red { background: #ef4444; }
-.t-dot.yellow { background: #f59e0b; }
-.t-dot.green { background: #10b981; }
+.t-dot.red {
+    background: #ef4444;
+}
+
+.t-dot.yellow {
+    background: #f59e0b;
+}
+
+.t-dot.green {
+    background: #10b981;
+}
 
 .terminal-status-text {
     font-family: 'Courier New', monospace;
@@ -791,11 +827,25 @@ h1, h2, h3, h4 {
 }
 
 /* Monospace Agent color coding */
-.agent-ORCHESTRATOR { color: #f59e0b; }
-.agent-SENSORY_GUARDIAN { color: #3b82f6; }
-.agent-MEDICAL_COMPLIANCE { color: #f472b6; }
-.agent-COGNITIVE_COMPANION { color: #34d399; }
-.agent-CARE_COORDINATOR { color: #a78bfa; }
+.agent-ORCHESTRATOR {
+    color: #f59e0b;
+}
+
+.agent-SENSORY_GUARDIAN {
+    color: #3b82f6;
+}
+
+.agent-MEDICAL_COMPLIANCE {
+    color: #f472b6;
+}
+
+.agent-COGNITIVE_COMPANION {
+    color: #34d399;
+}
+
+.agent-CARE_COORDINATOR {
+    color: #a78bfa;
+}
 
 /* ALERT LOG HISTORICAL TIMELINE */
 .alert-feed-item {
@@ -901,7 +951,8 @@ h1, h2, h3, h4 {
 .modal-content {
     background: #ffffff;
     width: 90%;
-    max-width: 580px;
+    max-width: 620px;
+    max-height: 85vh;
     padding: 24px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
@@ -910,6 +961,7 @@ h1, h2, h3, h4 {
     flex-direction: column;
     gap: 16px;
     animation: slideInUp 0.25s ease;
+    overflow-y: auto;
 }
 
 .modal-header {
@@ -976,23 +1028,169 @@ h1, h2, h3, h4 {
 
 /* ANIMATIONS */
 @keyframes borderAlertPulse {
-    0% { border-color: #fca5a5; }
-    50% { border-color: #ef4444; box-shadow: 0 0 12px rgba(239, 68, 68, 0.2); }
-    100% { border-color: #fca5a5; }
+    0% {
+        border-color: #fca5a5;
+    }
+
+    50% {
+        border-color: #ef4444;
+        box-shadow: 0 0 12px rgba(239, 68, 68, 0.2);
+    }
+
+    100% {
+        border-color: #fca5a5;
+    }
 }
 
 @keyframes pulseBorder {
-    0% { border-color: #cbd5e1; }
-    50% { border-color: var(--color-primary); }
-    100% { border-color: #cbd5e1; }
+    0% {
+        border-color: #cbd5e1;
+    }
+
+    50% {
+        border-color: var(--color-primary);
+    }
+
+    100% {
+        border-color: #cbd5e1;
+    }
 }
 
 @keyframes slideInUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================================================
+   LOADING OVERLAY & CIRCULAR PULSE HEARTBEAT
+   ========================================================================== */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #f1f5f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 0.5s ease-out, visibility 0.5s;
+}
+
+.loading-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-circle-wrapper {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-circular-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.loading-circle-bg {
+    fill: none;
+    stroke: #cbd5e1;
+    stroke-width: 6;
+}
+
+.loading-circle-fill {
+    fill: none;
+    stroke: var(--color-primary);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 565.48;
+    stroke-dashoffset: 565.48;
+    animation: fillCircle 3s forwards cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.loading-logo-box {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-logo-pulse {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    animation: heartBeatPulse 2.5s infinite ease-in-out;
+}
+
+@keyframes fillCircle {
+    0% {
+        stroke-dashoffset: 565.48;
+    }
+
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes heartBeatPulse {
+    0% {
+        transform: scale(1);
+    }
+
+    14% {
+        transform: scale(1.08);
+    }
+
+    28% {
+        transform: scale(1);
+    }
+
+    42% {
+        transform: scale(1.08);
+    }
+
+    70% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }

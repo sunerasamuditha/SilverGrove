@@ -23,7 +23,8 @@ RUN pip install --no-cache-dir \
     uvicorn \
     python-dotenv \
     google-cloud-firestore \
-    google-cloud-pubsub
+    google-cloud-pubsub \
+    fpdf2
 
 # Copy the application source code into the container
 COPY . .

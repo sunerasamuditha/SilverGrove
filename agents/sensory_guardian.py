@@ -1,4 +1,3 @@
-import os
 from google.adk.agents import Agent
 from tools.vitals_tools import get_resident_vitals_tool, get_gait_trend_tool
 

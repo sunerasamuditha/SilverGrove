@@ -1,5 +1,5 @@
 import datetime
-from typing import dict, List
+from typing import Dict, List
 
 def format_heart_rate_fhir(resident_id: str, heart_rate: int) -> dict:
     """

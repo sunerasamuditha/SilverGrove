@@ -1,4 +1,3 @@
-import os
 from google.adk.agents import Agent
 from tools.vitals_tools import get_resident_details_tool
 from tools.medication_tools import check_drug_side_effects, check_drug_interactions

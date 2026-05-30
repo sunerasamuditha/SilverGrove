@@ -1,4 +1,3 @@
-import os
 from google.adk.agents import Agent
 from tools.alert_tools import log_alert_to_timeline
 
