@@ -665,3 +665,32 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+
+document.getElementById('generate-pdf-btn')?.addEventListener('click', async () => { 
+    if(!activeResidentId) return; 
+    const btn = document.getElementById('generate-pdf-btn'); 
+    const origText = btn.innerHTML; 
+    btn.innerHTML = 'Generating...'; 
+    try { 
+        const res = await fetch(getApiBaseUrl() + '/api/reports/generate', { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify({resident_id: activeResidentId}) 
+        }); 
+        const data = await res.json(); 
+        if(data.status === 'success') { 
+            alert(data.message); 
+            // Also attempt to open the URL if it contains one
+            const urlMatch = data.message.match(/URL:\s*(.*)/);
+            if(urlMatch && urlMatch[1]) {
+                window.open(urlMatch[1].trim(), '_blank');
+            }
+        } else { 
+            alert('Error: ' + data.detail); 
+        } 
+    } catch(e) { 
+        alert('Failed to generate PDF: ' + e); 
+    } finally { 
+        btn.innerHTML = origText; 
+    } 
+});

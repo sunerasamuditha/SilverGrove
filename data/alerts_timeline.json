@@ -1,5 +1,21 @@
 [
   {
+    "id": "alert_0180b000820e",
+    "timestamp": "2026-05-30T13:28:08.580499Z",
+    "resident_id": "martha_001",
+    "resident_name": "Martha Reynolds",
+    "severity": "ADVISORY",
+    "message": "Moderate health advisory for Martha Reynolds. Observed gait speed decline and increased fall risk following initiation of Metoprolol Succinate. Resident requires close monitoring and slow postural transitions.",
+    "actions": [
+      "Immediate physical check-in",
+      "Assist resident with slow transitions to avoid dizziness",
+      "Monitor blood pressure before/after medication",
+      "Request PCP review of Metoprolol dosage"
+    ],
+    "correlation": "Introduction of Metoprolol Succinate on May 23, 2026, correlates with observed fatigue, dizziness, and decreased gait speed due to potential orthostatic hypotension.",
+    "acknowledged": false
+  },
+  {
     "id": "alert_1780095839",
     "timestamp": "2026-05-30T04:33:59.275928Z",
     "resident_id": "martha_001",

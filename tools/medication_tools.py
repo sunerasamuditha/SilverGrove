@@ -256,17 +256,17 @@ def check_drug_interactions(medications: list) -> str:
         interactions_found = []
         
         for i, med1 in enumerate(clean_meds):
-            for med2 in clean_meds[i+1:]:
+            for j, med2 in enumerate(clean_meds[i+1:], start=i+1):
                 # Check med1 -> med2 interactions
                 if med1 in CLINICAL_REFERENCE_DATABASE and med2 in CLINICAL_REFERENCE_DATABASE[med1]["interactions"]:
                     interactions_found.append(
-                        f"[WARNING] **DANGEROUS INTERACTION DETECTED** between **{medications[i]}** and **{medications[clean_meds.index(med2)]}**:\n"
+                        f"[WARNING] **DANGEROUS INTERACTION DETECTED** between **{medications[i]}** and **{medications[j]}**:\n"
                         f"{CLINICAL_REFERENCE_DATABASE[med1]['interactions'][med2]}"
                     )
                 # Check med2 -> med1 interactions
                 elif med2 in CLINICAL_REFERENCE_DATABASE and med1 in CLINICAL_REFERENCE_DATABASE[med2]["interactions"]:
                     interactions_found.append(
-                        f"[WARNING] **DANGEROUS INTERACTION DETECTED** between **{medications[clean_meds.index(med2)]}** and **{medications[i]}**:\n"
+                        f"[WARNING] **DANGEROUS INTERACTION DETECTED** between **{medications[j]}** and **{medications[i]}**:\n"
                         f"{CLINICAL_REFERENCE_DATABASE[med2]['interactions'][med1]}"
                     )
                     

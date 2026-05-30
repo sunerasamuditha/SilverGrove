@@ -1,6 +1,7 @@
 import os
 import json
 import datetime
+import uuid
 from typing import Dict, Any, List
 from services.gcp_service import get_alerts_db, save_alert_db, clear_alerts_db, publish_alert_event
 
@@ -29,7 +30,7 @@ def log_alert_to_timeline(resident_id: str, resident_name: str, severity: str, m
         timestamp = datetime.datetime.utcnow().isoformat() + "Z"
         
         alert = {
-            "id": f"alert_{int(datetime.datetime.utcnow().timestamp())}",
+            "id": f"alert_{uuid.uuid4().hex[:12]}",
             "timestamp": timestamp,
             "resident_id": resident_id,
             "resident_name": resident_name,
@@ -64,7 +65,7 @@ def escalate_to_human_tool(resident_id: str, resident_name: str, reason: str, ur
 
         timestamp = datetime.datetime.utcnow().isoformat() + "Z"
         escalation_event = {
-            "id": f"escalation_{int(datetime.datetime.utcnow().timestamp())}",
+            "id": f"escalation_{uuid.uuid4().hex[:12]}",
             "timestamp": timestamp,
             "resident_id": resident_id,
             "resident_name": resident_name,

@@ -3,6 +3,7 @@ import sys
 import json
 import uuid
 import time
+import asyncio
 from dataclasses import dataclass, field, asdict
 from dotenv import load_dotenv
 
@@ -142,148 +143,192 @@ class PipelineTrajectory:
     care_coordinator: AgentState = field(default_factory=AgentState)
     summary: str = "No critical anomalies detected. Routine vitals are within stable thresholds."
 
+class AsyncEventBus:
+    def __init__(self):
+        self.subscribers = {}
+        
+    def subscribe(self, topic: str, queue: asyncio.Queue):
+        if topic not in self.subscribers:
+            self.subscribers[topic] = []
+        self.subscribers[topic].append(queue)
+        
+    async def publish(self, topic: str, payload: dict):
+        if topic in self.subscribers:
+            for q in self.subscribers[topic]:
+                await q.put(payload)
+
 class SilverGroveOrchestrator:
     """
     SilverGrove Multi-Agent Orchestrator.
-    Coordinates sequential execution and state handover across all 4 agents
-    using stateful ADK Runner sessions. Emits structured logs.
+    Coordinates execution using a true Asynchronous Event Bus.
+    Agents publish and subscribe to clinical events independently.
+    Retains long-term episodic memory via persistent session IDs.
     """
     
     def run_health_check(self, resident_id: str, collector: TraceCollector = None) -> dict:
-        print(f"\n[SilverGrove] Starting end-to-end multi-agent clinical check for: {resident_id}")
-        
-        # Generate unique session IDs for each run to prevent state pollution
-        run_session_id = f"session_{uuid.uuid4().hex[:8]}"
+        # Run the async orchestrator inside the current thread's event loop (or a new one)
+        try:
+            loop = asyncio.get_running_loop()
+            # If we are already in an event loop, we shouldn't use asyncio.run
+            # This handles the FastAPI background thread case
+            return asyncio.run_coroutine_threadsafe(self.run_health_check_async(resident_id, collector), loop).result()
+        except RuntimeError:
+            return asyncio.run(self.run_health_check_async(resident_id, collector))
+            
+    async def run_health_check_async(self, resident_id: str, collector: TraceCollector = None) -> dict:
+        if collector:
+            collector.log("ORCHESTRATOR", "START", "Booting Asynchronous Event Bus for Multi-Agent Clinical Audit", {"resident_id": resident_id})
+            
+        trajectory = PipelineTrajectory(resident_id=resident_id, session_id=f"session_{resident_id}")
         user_id = f"user_{resident_id}"
         
-        if collector:
-            collector.log(
-                agent="ORCHESTRATOR",
-                event_type="START",
-                message=f"Beginning end-to-end multi-agent clinical audit",
-                data={"resident_id": resident_id, "session_id": run_session_id}
+        # Persistent memory: Agents remember this specific resident across multiple checks!
+        sensory_session = f"sensory_{resident_id}"
+        compliance_session = f"compliance_{resident_id}"
+        companion_session = f"companion_{resident_id}"
+        coordinator_session = f"coordinator_{resident_id}"
+        
+        bus = AsyncEventBus()
+        loop = asyncio.get_running_loop()
+        
+        # Create queues for each agent
+        sensory_q = asyncio.Queue()
+        compliance_q = asyncio.Queue()
+        companion_q = asyncio.Queue()
+        coordinator_q = asyncio.Queue()
+        
+        # Subscribe agents to topics
+        bus.subscribe("SYSTEM.START_CHECK", sensory_q)
+        bus.subscribe("CLINICAL.ANOMALY_DETECTED", compliance_q)
+        bus.subscribe("CLINICAL.COMPLIANCE_REPORT_READY", companion_q)
+        bus.subscribe("CLINICAL.COMPANION_DRAFT_READY", coordinator_q)
+
+        # Event to signal the orchestrator that the workflow is complete
+        workflow_complete = asyncio.Event()
+
+        async def sensory_worker():
+            event = await sensory_q.get()
+            if collector:
+                collector.log("SENSORY_GUARDIAN", "SUBSCRIBE", "Received SYSTEM.START_CHECK event via Async Bus")
+            
+            prompt = (
+                f"Analyze vital sign readings, baselines, and 5-day gait history for resident '{resident_id}'. "
+                "Report if there are any significant anomalies (elevated/low blood pressure or gait speed slowdown >=15%)."
             )
-        
-        trajectory = PipelineTrajectory(
-            resident_id=resident_id,
-            session_id=run_session_id
-        )
-        
-        # --- Step 1: Sensory Guardian Anomaly Detection ---
-        if collector:
-            collector.log("ORCHESTRATOR", "STAGE", "Activating Step 1: Sensory Guardian Anomaly Detection")
-        
-        sensory_prompt = (
-            f"Analyze vital sign readings, baselines, and 5-day gait history for resident '{resident_id}'. "
-            "Report if there are any significant anomalies (elevated/low blood pressure or gait speed slowdown >=15%)."
-        )
-        try:
-            sensory_response = invoke_agent(sensory_runner, sensory_prompt, user_id, run_session_id, collector)
-            trajectory.sensory_guardian.status = "COMPLETED"
-            trajectory.sensory_guardian.output = sensory_response
-        except Exception as e:
+            try:
+                resp = await loop.run_in_executor(None, invoke_agent, sensory_runner, prompt, user_id, sensory_session, collector)
+                trajectory.sensory_guardian.status = "COMPLETED"
+                trajectory.sensory_guardian.output = resp
+                
+                has_anomaly = any(w in resp.upper() for w in ["ANOMALY", "WARNING", "DEGRADATION", "BP ELEVATED", "SLOWDOWN", "ELEVATED", "SPIKE", "ALERT", "LOW BLOOD PRESSURE", " hypotension"])
+                if has_anomaly:
+                    if collector:
+                        collector.log("SENSORY_GUARDIAN", "PUBLISH", "Publishing CLINICAL.ANOMALY_DETECTED to Async Bus")
+                    await bus.publish("CLINICAL.ANOMALY_DETECTED", {"data": resp})
+                else:
+                    msg = "Vitals are normal. No clinical escalation needed."
+                    trajectory.summary = msg
+                    if collector:
+                        collector.log("ORCHESTRATOR", "COMPLETE", msg)
+                    workflow_complete.set()
+            except Exception as e:
+                trajectory.sensory_guardian.status = "FAILED"
+                trajectory.sensory_guardian.output = str(e)
+                workflow_complete.set()
+                
+        async def compliance_worker():
+            event = await compliance_q.get()
             if collector:
-                collector.log("ORCHESTRATOR", "ERROR", f"Sensory Guardian execution failed: {str(e)}")
-            trajectory.sensory_guardian.status = "FAILED"
-            trajectory.sensory_guardian.output = str(e)
-            return asdict(trajectory)
+                collector.log("MEDICAL_COMPLIANCE", "SUBSCRIBE", "Received CLINICAL.ANOMALY_DETECTED event. Beginning analysis.")
+            
+            sensory_data = event["data"]
+            prompt = (
+                f"An anomaly was flagged for resident '{resident_id}'. Sensory Guardian report:\n\"\"\"{sensory_data}\"\"\"\n"
+                "Look up current prescriptions. Determine if any medication correlates chemically with these symptoms. "
+                "Provide a structured Clinical Correlation Report."
+            )
+            try:
+                resp = await loop.run_in_executor(None, invoke_agent, compliance_runner, prompt, user_id, compliance_session, collector)
+                trajectory.medical_compliance.status = "COMPLETED"
+                trajectory.medical_compliance.output = resp
+                
+                risk_level = "WARNING"
+                if "CRITICAL" in resp.upper(): risk_level = "CRITICAL"
+                elif "LOW" in resp.upper(): risk_level = "ADVISORY"
+                
+                if collector:
+                    collector.log("MEDICAL_COMPLIANCE", "PUBLISH", f"Publishing CLINICAL.COMPLIANCE_REPORT_READY (Risk: {risk_level})")
+                await bus.publish("CLINICAL.COMPLIANCE_REPORT_READY", {"data": resp, "risk": risk_level})
+            except Exception as e:
+                trajectory.medical_compliance.status = "FAILED"
+                workflow_complete.set()
 
-        # Evaluate if an anomaly was flagged
-        has_anomaly = any(
-            word in sensory_response.upper() 
-            for word in ["ANOMALY", "WARNING", "DEGRADATION", "BP ELEVATED", "SLOWDOWN", "ELEVATED", "SPIKE", "ALERT", "LOW BLOOD PRESSURE", " hypotension"]
-        )
+        async def companion_worker():
+            event = await companion_q.get()
+            if collector:
+                collector.log("COGNITIVE_COMPANION", "SUBSCRIBE", "Received CLINICAL.COMPLIANCE_REPORT_READY event. Drafting empathy message.")
+                
+            compliance_data = event["data"]
+            prompt = (
+                f"Resident '{resident_id}' needs a check-in. The Medical Compliance Agent noted:\n\"\"\"{compliance_data}\"\"\"\n"
+                "You have access to episodic memory of past chats. Recall if this is a recurring issue. "
+                "Write a warm conversational message advising them of safety steps."
+            )
+            try:
+                resp = await loop.run_in_executor(None, invoke_agent, companion_runner, prompt, user_id, companion_session, collector)
+                trajectory.cognitive_companion.status = "COMPLETED"
+                trajectory.cognitive_companion.output = resp
+                
+                if collector:
+                    collector.log("COGNITIVE_COMPANION", "PUBLISH", "Publishing CLINICAL.COMPANION_DRAFT_READY")
+                await bus.publish("CLINICAL.COMPANION_DRAFT_READY", {"companion_draft": resp, "compliance_data": compliance_data, "risk": event["risk"]})
+            except Exception as e:
+                trajectory.cognitive_companion.status = "FAILED"
+                workflow_complete.set()
+
+        async def coordinator_worker():
+            event = await coordinator_q.get()
+            if collector:
+                collector.log("CARE_COORDINATOR", "SUBSCRIBE", "Received CLINICAL.COMPANION_DRAFT_READY. Routing A2A alerts.")
+                
+            prompt = (
+                f"Health situation for '{resident_id}'.\n"
+                f"- Risk: {event['risk']}\n"
+                f"- Compliance: {event['compliance_data'][:500]}...\n"
+                f"- Check-in Draft: {event['companion_draft'][:300]}...\n"
+                "Route this care alert via log_a2a_alert_tool. Include actionable semicolon-separated actions."
+            )
+            try:
+                resp = await loop.run_in_executor(None, invoke_agent, coordinator_runner, prompt, user_id, coordinator_session, collector)
+                trajectory.care_coordinator.status = "COMPLETED"
+                trajectory.care_coordinator.output = resp
+                
+                trajectory.summary = f"Multi-agent async workflow complete. Consensus: {event['risk']} risk. A2A alerts dispatched."
+                if collector:
+                    collector.log("ORCHESTRATOR", "COMPLETE", trajectory.summary)
+            except Exception as e:
+                trajectory.care_coordinator.status = "FAILED"
+            finally:
+                workflow_complete.set()
+
+        # Start all agent workers concurrently
+        tasks = [
+            asyncio.create_task(sensory_worker()),
+            asyncio.create_task(compliance_worker()),
+            asyncio.create_task(companion_worker()),
+            asyncio.create_task(coordinator_worker())
+        ]
         
-        if not has_anomaly:
-            msg = "Vitals are normal. No clinical escalation needed."
-            if collector:
-                collector.log("ORCHESTRATOR", "COMPLETE", msg)
-            trajectory.summary = msg
-            return asdict(trajectory)
-            
-        # --- Step 2: Medical Compliance Clinical Correlation ---
-        if collector:
-            collector.log("ORCHESTRATOR", "HANDOFF", "Anomaly flagged. Routing to Step 2: Medical Compliance Agent")
+        # Fire the starting gun on the Event Bus
+        await bus.publish("SYSTEM.START_CHECK", {})
         
-        compliance_prompt = (
-            f"An anomaly was flagged for resident '{resident_id}'. Here is the Sensory Guardian's report:\n"
-            f"\"\"\"{sensory_response}\"\"\"\n"
-            "Look up their current prescriptions and active conditions. Determine if any new medication started "
-            "recently could chemically correlate with the observed symptoms. Provide a structured Clinical Correlation Report."
-        )
-        try:
-            compliance_response = invoke_agent(compliance_runner, compliance_prompt, user_id, run_session_id, collector)
-            trajectory.medical_compliance.status = "COMPLETED"
-            trajectory.medical_compliance.output = compliance_response
-        except Exception as e:
-            if collector:
-                collector.log("ORCHESTRATOR", "ERROR", f"Medical Compliance execution failed: {str(e)}")
-            trajectory.medical_compliance.status = "FAILED"
-            trajectory.medical_compliance.output = str(e)
-            return asdict(trajectory)
-
-        # Extract risk level from compliance report
-        risk_level = "WARNING"
-        if "CRITICAL" in compliance_response.upper():
-            risk_level = "CRITICAL"
-        elif "MODERATE" in compliance_response.upper():
-            risk_level = "WARNING"
-        elif "LOW" in compliance_response.upper():
-            risk_level = "ADVISORY"
-
-        # --- Step 3: Cognitive Companion Empathetic Check-in ---
-        if collector:
-            collector.log("ORCHESTRATOR", "HANDOFF", "Clinical analysis complete. Handing over to Step 3: Cognitive Companion")
+        # Wait for the workflow to complete
+        await workflow_complete.wait()
+        
+        # Cleanup tasks (they are one-shot in this implementation)
+        for t in tasks:
+            t.cancel()
             
-        companion_prompt = (
-            f"You need to speak to resident '{resident_id}'. The Medical Compliance Agent completed an analysis:\n"
-            f"\"\"\"{compliance_response}\"\"\"\n"
-            "Write a warm, simple, check-in conversational message to the resident. Ask if they have been feeling "
-            "dizzy, tell them we noticed some mild changes, and give them the key safety advice from the report (such as standing slowly and drinking water)."
-        )
-        try:
-            companion_response = invoke_agent(companion_runner, companion_prompt, user_id, run_session_id, collector)
-            trajectory.cognitive_companion.status = "COMPLETED"
-            trajectory.cognitive_companion.output = companion_response
-        except Exception as e:
-            if collector:
-                collector.log("ORCHESTRATOR", "ERROR", f"Cognitive Companion execution failed: {str(e)}")
-            trajectory.cognitive_companion.status = "FAILED"
-            trajectory.cognitive_companion.output = str(e)
-            return asdict(trajectory)
-
-        # --- Step 4: Care Coordinator A2A Gateway Alert Routing ---
-        if collector:
-            collector.log("ORCHESTRATOR", "HANDOFF", "Handoff to Step 4: Care Coordinator for A2A dispatch")
-            
-        coordinator_prompt = (
-            f"We have an active health situation for resident '{resident_id}'.\n"
-            f"- Clinical Risk: {risk_level}\n"
-            f"- Compliance Summary: {compliance_response[:500]}...\n"
-            f"- Companion Check-in Draft: {companion_response[:300]}...\n\n"
-            "Please route this care alert. Look up the resident details to get their full name. "
-            "Invoke the log_a2a_alert_tool with appropriate parameters. Use a semicolon-separated list of actions "
-            "for the companion instructions."
-        )
-        try:
-            coordinator_response = invoke_agent(coordinator_runner, coordinator_prompt, user_id, run_session_id, collector)
-            trajectory.care_coordinator.status = "COMPLETED"
-            trajectory.care_coordinator.output = coordinator_response
-        except Exception as e:
-            if collector:
-                collector.log("ORCHESTRATOR", "ERROR", f"Care Coordinator execution failed: {str(e)}")
-            trajectory.care_coordinator.status = "FAILED"
-            trajectory.care_coordinator.output = str(e)
-            return asdict(trajectory)
-            
-        summary_msg = (
-            f"End-to-end clinical check complete. Multi-agent consensus: {risk_level} risk. "
-            "A2A alerts dispatched to family and primary care physician. Empathetic resident check-in prepared."
-        )
-        if collector:
-            collector.log("ORCHESTRATOR", "COMPLETE", f"Multi-agent consensus completed successfully: {risk_level} risk")
-            
-        trajectory.summary = summary_msg
         return asdict(trajectory)
 
 if __name__ == "__main__":

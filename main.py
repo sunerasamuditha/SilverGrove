@@ -20,6 +20,9 @@ from tools.alert_tools import get_alerts_timeline, clear_alerts_timeline
 from tools.trace_events import TraceCollector
 from a2a.agent_cards import get_root_agent_card, get_all_agent_cards
 from mcp_servers.vitals_server import set_vitals_frozen
+from agents.clinical_analyst import clinical_analyst_agent
+from google.adk.runners import Runner
+from agent import session_service, invoke_agent
 
 # Initialize FastAPI App
 app = FastAPI(
@@ -175,6 +178,25 @@ def get_alerts():
 def clear_alerts():
     clear_alerts_timeline()
     return {"status": "success", "message": "Alert timeline cleared successfully."}
+
+class ReportRequest(BaseModel):
+    resident_id: str
+
+analyst_runner = Runner(agent=clinical_analyst_agent, app_name="silvergrove", session_service=session_service, auto_create_session=True)
+
+@app.post("/api/reports/generate")
+def generate_report(req: ReportRequest):
+    try:
+        prompt = (
+            f"Analyze the historical health timeline for resident '{req.resident_id}'. "
+            "Generate a comprehensive clinical summary and export it to a PDF report. "
+            "Return the message containing the URL of the generated PDF."
+        )
+        session_id = f"analyst_{req.resident_id}"
+        response_text = invoke_agent(analyst_runner, prompt, f"user_{req.resident_id}", session_id)
+        return {"status": "success", "message": response_text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # Serve High-Fidelity UI Static Files
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
