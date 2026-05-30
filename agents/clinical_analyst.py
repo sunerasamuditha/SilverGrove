@@ -50,8 +50,22 @@ def export_pdf_report(resident_id: str, title: str, report_content: str) -> str:
         
         # Write text, handling newlines
         for line in report_content.split('\n'):
-            # Convert bold markers if they exist, or just strip them to keep it simple for the basic FPDF
-            clean_line = line.replace('**', '')
+            # Strip markdown bolding and asterisks
+            clean_line = line.replace('**', '').replace('*', '-')
+            
+            # Skip pure markdown separators (e.g. "----------")
+            if len(clean_line.replace('-', '').replace('=', '').replace('_', '').strip()) == 0 and len(clean_line) > 3:
+                continue
+                
+            # Truncate extremely long words that cause "Not enough horizontal space" errors
+            words = clean_line.split(' ')
+            safe_words = [w[:70] for w in words]
+            clean_line = ' '.join(safe_words)
+            
+            # Replace smart quotes and force latin-1 to avoid font glyph errors in core Arial
+            clean_line = clean_line.replace('“', '"').replace('”', '"').replace('’', "'").replace('‘', "'")
+            clean_line = clean_line.encode('latin-1', 'replace').decode('latin-1')
+            
             pdf.multi_cell(0, 8, txt=clean_line)
             
         # Ensure reports directory exists
