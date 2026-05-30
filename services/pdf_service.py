@@ -2,6 +2,20 @@ import os
 from fpdf import FPDF
 from tools.alert_tools import get_alerts_timeline
 
+def sanitize_line(text: str) -> str:
+    if not text:
+        return ""
+    # Strip markdown symbols
+    clean = text.replace('**', '').replace('*', '-')
+    # Replace smart quotes and special characters
+    clean = clean.replace('“', '"').replace('”', '"').replace('’', "'").replace('‘', "'")
+    # Truncate extremely long words that cause "Not enough horizontal space" errors (max 60 chars)
+    words = clean.split(' ')
+    safe_words = [w[:60] for w in words]
+    clean = ' '.join(safe_words)
+    # Encode to latin-1 to avoid glyph errors
+    return clean.encode('latin-1', 'replace').decode('latin-1')
+
 def generate_local_pdf(resident_id: str) -> str:
     """
     Directly builds a PDF from the JSON alert history without using an LLM.
@@ -35,16 +49,13 @@ def generate_local_pdf(resident_id: str) -> str:
             
             # Format row
             line = f"[{time_str}] {severity} - {msg}"
-            
-            # Handle encoding and long strings
-            line = line.encode('latin-1', 'replace').decode('latin-1')
-            pdf.multi_cell(0, 8, txt=line)
+            pdf.multi_cell(0, 8, txt=sanitize_line(line))
             
             # Add correlation if exists
             correlation = a.get('correlation')
             if correlation:
-                corr_line = f"  -> Correlation: {correlation}".encode('latin-1', 'replace').decode('latin-1')
-                pdf.multi_cell(0, 8, txt=corr_line)
+                corr_line = f"  -> Correlation: {correlation}"
+                pdf.multi_cell(0, 8, txt=sanitize_line(corr_line))
                 
             pdf.ln(2)
             
