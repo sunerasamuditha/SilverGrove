@@ -3,6 +3,7 @@ import sys
 import json
 import uuid
 import time
+from dataclasses import dataclass, field, asdict
 from dotenv import load_dotenv
 
 # Ensure local path is configured
@@ -126,6 +127,21 @@ def invoke_agent(runner: Runner, prompt: str, user_id: str, session_id: str, col
     raise RuntimeError(error_msg)
 
 
+@dataclass
+class AgentState:
+    status: str = "SKIPPED"
+    output: str = ""
+
+@dataclass
+class PipelineTrajectory:
+    resident_id: str
+    session_id: str
+    sensory_guardian: AgentState = field(default_factory=AgentState)
+    medical_compliance: AgentState = field(default_factory=AgentState)
+    cognitive_companion: AgentState = field(default_factory=AgentState)
+    care_coordinator: AgentState = field(default_factory=AgentState)
+    summary: str = "No critical anomalies detected. Routine vitals are within stable thresholds."
+
 class SilverGroveOrchestrator:
     """
     SilverGrove Multi-Agent Orchestrator.
@@ -148,15 +164,10 @@ class SilverGroveOrchestrator:
                 data={"resident_id": resident_id, "session_id": run_session_id}
             )
         
-        trajectory = {
-            "resident_id": resident_id,
-            "session_id": run_session_id,
-            "sensory_guardian": {"status": "SKIPPED", "output": ""},
-            "medical_compliance": {"status": "SKIPPED", "output": ""},
-            "cognitive_companion": {"status": "SKIPPED", "output": ""},
-            "care_coordinator": {"status": "SKIPPED", "output": ""},
-            "summary": "No critical anomalies detected. Routine vitals are within stable thresholds."
-        }
+        trajectory = PipelineTrajectory(
+            resident_id=resident_id,
+            session_id=run_session_id
+        )
         
         # --- Step 1: Sensory Guardian Anomaly Detection ---
         if collector:
@@ -168,15 +179,14 @@ class SilverGroveOrchestrator:
         )
         try:
             sensory_response = invoke_agent(sensory_runner, sensory_prompt, user_id, run_session_id, collector)
-            trajectory["sensory_guardian"] = {
-                "status": "COMPLETED",
-                "output": sensory_response
-            }
+            trajectory.sensory_guardian.status = "COMPLETED"
+            trajectory.sensory_guardian.output = sensory_response
         except Exception as e:
             if collector:
                 collector.log("ORCHESTRATOR", "ERROR", f"Sensory Guardian execution failed: {str(e)}")
-            trajectory["sensory_guardian"] = {"status": "FAILED", "output": str(e)}
-            return trajectory
+            trajectory.sensory_guardian.status = "FAILED"
+            trajectory.sensory_guardian.output = str(e)
+            return asdict(trajectory)
 
         # Evaluate if an anomaly was flagged
         has_anomaly = any(
@@ -188,8 +198,8 @@ class SilverGroveOrchestrator:
             msg = "Vitals are normal. No clinical escalation needed."
             if collector:
                 collector.log("ORCHESTRATOR", "COMPLETE", msg)
-            trajectory["summary"] = msg
-            return trajectory
+            trajectory.summary = msg
+            return asdict(trajectory)
             
         # --- Step 2: Medical Compliance Clinical Correlation ---
         if collector:
@@ -203,15 +213,14 @@ class SilverGroveOrchestrator:
         )
         try:
             compliance_response = invoke_agent(compliance_runner, compliance_prompt, user_id, run_session_id, collector)
-            trajectory["medical_compliance"] = {
-                "status": "COMPLETED",
-                "output": compliance_response
-            }
+            trajectory.medical_compliance.status = "COMPLETED"
+            trajectory.medical_compliance.output = compliance_response
         except Exception as e:
             if collector:
                 collector.log("ORCHESTRATOR", "ERROR", f"Medical Compliance execution failed: {str(e)}")
-            trajectory["medical_compliance"] = {"status": "FAILED", "output": str(e)}
-            return trajectory
+            trajectory.medical_compliance.status = "FAILED"
+            trajectory.medical_compliance.output = str(e)
+            return asdict(trajectory)
 
         # Extract risk level from compliance report
         risk_level = "WARNING"
@@ -234,15 +243,14 @@ class SilverGroveOrchestrator:
         )
         try:
             companion_response = invoke_agent(companion_runner, companion_prompt, user_id, run_session_id, collector)
-            trajectory["cognitive_companion"] = {
-                "status": "COMPLETED",
-                "output": companion_response
-            }
+            trajectory.cognitive_companion.status = "COMPLETED"
+            trajectory.cognitive_companion.output = companion_response
         except Exception as e:
             if collector:
                 collector.log("ORCHESTRATOR", "ERROR", f"Cognitive Companion execution failed: {str(e)}")
-            trajectory["cognitive_companion"] = {"status": "FAILED", "output": str(e)}
-            return trajectory
+            trajectory.cognitive_companion.status = "FAILED"
+            trajectory.cognitive_companion.output = str(e)
+            return asdict(trajectory)
 
         # --- Step 4: Care Coordinator A2A Gateway Alert Routing ---
         if collector:
@@ -259,15 +267,14 @@ class SilverGroveOrchestrator:
         )
         try:
             coordinator_response = invoke_agent(coordinator_runner, coordinator_prompt, user_id, run_session_id, collector)
-            trajectory["care_coordinator"] = {
-                "status": "COMPLETED",
-                "output": coordinator_response
-            }
+            trajectory.care_coordinator.status = "COMPLETED"
+            trajectory.care_coordinator.output = coordinator_response
         except Exception as e:
             if collector:
                 collector.log("ORCHESTRATOR", "ERROR", f"Care Coordinator execution failed: {str(e)}")
-            trajectory["care_coordinator"] = {"status": "FAILED", "output": str(e)}
-            return trajectory
+            trajectory.care_coordinator.status = "FAILED"
+            trajectory.care_coordinator.output = str(e)
+            return asdict(trajectory)
             
         summary_msg = (
             f"End-to-end clinical check complete. Multi-agent consensus: {risk_level} risk. "
@@ -276,8 +283,8 @@ class SilverGroveOrchestrator:
         if collector:
             collector.log("ORCHESTRATOR", "COMPLETE", f"Multi-agent consensus completed successfully: {risk_level} risk")
             
-        trajectory["summary"] = summary_msg
-        return trajectory
+        trajectory.summary = summary_msg
+        return asdict(trajectory)
 
 if __name__ == "__main__":
     # Test orchestrator locally

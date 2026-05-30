@@ -189,80 +189,92 @@ def check_drug_side_effects(drug_name: str) -> str:
     Search the official US FDA openFDA database for a drug's adverse reactions and warnings.
     No API key required. High reliability, zero cost.
     """
-    normalized = clean_drug_name(drug_name)
-    encoded_name = urllib.parse.quote(f'openfda.brand_name:"{normalized}"+OR+openfda.generic_name:"{normalized}"')
-    url = f'https://api.fda.gov/drug/label.json?search={encoded_name}&limit=1'
-    
     try:
-        req = urllib.request.Request(
-            url, 
-            headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-        )
-        with urllib.request.urlopen(req, timeout=5) as response:
-            data = json.loads(response.read().decode('utf-8'))
-            results = data.get("results", [])
-            if results:
-                result = results[0]
-                
-                # Extract adverse reactions, warnings, or precautions
-                adverse_reactions = result.get("adverse_reactions", ["No detailed adverse reactions listed."])[0]
-                warnings = result.get("warnings_and_cautions", result.get("warnings", ["No direct warnings section found."]))[0]
-                
-                # Truncate to prevent token blowouts, retaining rich medical context
-                summary = (
-                    f"### openFDA Drug Info: {drug_name.upper()}\n\n"
-                    f"**Adverse Reactions / Side Effects (FDA):**\n"
-                    f"{adverse_reactions[:800]}...\n\n"
-                    f"**Warnings & Precautions (FDA):**\n"
-                    f"{warnings[:800]}..."
-                )
-                return summary
-    except Exception as e:
-        # openFDA unreachable -- use embedded clinical reference database
-        pass
+        if not drug_name:
+            return "Error: drug_name must be provided."
+            
+        normalized = clean_drug_name(drug_name)
+        encoded_name = urllib.parse.quote(f'openfda.brand_name:"{normalized}"+OR+openfda.generic_name:"{normalized}"')
+        url = f'https://api.fda.gov/drug/label.json?search={encoded_name}&limit=1'
         
-    # Embedded clinical reference (legitimate offline knowledge base)
-    if normalized in CLINICAL_REFERENCE_DATABASE:
-        info = CLINICAL_REFERENCE_DATABASE[normalized]
-        beers = f"\n**Beers Criteria (Geriatric):** {info.get('beers_criteria', 'N/A')}" if 'beers_criteria' in info else ""
-        return (
-            f"### Clinical Reference: {drug_name.upper()}\n\n"
-            f"**Generic Name:** {info['generic_name']}\n"
-            f"**Brand Name:** {info['brand_name']}\n"
-            f"**Drug Class:** {info.get('drug_class', 'N/A')}\n\n"
-            f"**Common Side Effects:**\n" + "\n".join([f"- {se}" for se in info['side_effects']]) + "\n\n"
-            f"**Geriatric Warnings:**\n"
-            f"{info['warnings']}"
-            f"{beers}"
-        )
-    
-    return f"No openFDA label or clinical reference record found for drug '{drug_name}'."
+        try:
+            req = urllib.request.Request(
+                url, 
+                headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+            )
+            with urllib.request.urlopen(req, timeout=5) as response:
+                data = json.loads(response.read().decode('utf-8'))
+                results = data.get("results", [])
+                if results:
+                    result = results[0]
+                    
+                    # Extract adverse reactions, warnings, or precautions
+                    adverse_reactions = result.get("adverse_reactions", ["No detailed adverse reactions listed."])[0]
+                    warnings = result.get("warnings_and_cautions", result.get("warnings", ["No direct warnings section found."]))[0]
+                    
+                    # Truncate to prevent token blowouts, retaining rich medical context
+                    summary = (
+                        f"### openFDA Drug Info: {drug_name.upper()}\n\n"
+                        f"**Adverse Reactions / Side Effects (FDA):**\n"
+                        f"{adverse_reactions[:800]}...\n\n"
+                        f"**Warnings & Precautions (FDA):**\n"
+                        f"{warnings[:800]}..."
+                    )
+                    return summary
+        except Exception:
+            # openFDA unreachable -- use embedded clinical reference database
+            pass
+            
+        # Embedded clinical reference (legitimate offline knowledge base)
+        if normalized in CLINICAL_REFERENCE_DATABASE:
+            info = CLINICAL_REFERENCE_DATABASE[normalized]
+            beers = f"\n**Beers Criteria (Geriatric):** {info.get('beers_criteria', 'N/A')}" if 'beers_criteria' in info else ""
+            return (
+                f"### Clinical Reference: {drug_name.upper()}\n\n"
+                f"**Generic Name:** {info['generic_name']}\n"
+                f"**Brand Name:** {info['brand_name']}\n"
+                f"**Drug Class:** {info.get('drug_class', 'N/A')}\n\n"
+                f"**Common Side Effects:**\n" + "\n".join([f"- {se}" for se in info['side_effects']]) + "\n\n"
+                f"**Geriatric Warnings:**\n"
+                f"{info['warnings']}"
+                f"{beers}"
+            )
+        
+        return f"No openFDA label or clinical reference record found for drug '{drug_name}'."
+    except Exception as e:
+        return f"Tool Execution Error (check_drug_side_effects): {str(e)}"
 
 def check_drug_interactions(medications: list) -> str:
     """
     Cross-reference a list of drugs to check for dangerous drug-drug interactions.
     """
-    clean_meds = [clean_drug_name(med) for med in medications]
-    interactions_found = []
-    
-    for i, med1 in enumerate(clean_meds):
-        for med2 in clean_meds[i+1:]:
-            # Check med1 -> med2 interactions
-            if med1 in CLINICAL_REFERENCE_DATABASE and med2 in CLINICAL_REFERENCE_DATABASE[med1]["interactions"]:
-                interactions_found.append(
-                    f"[WARNING] **DANGEROUS INTERACTION DETECTED** between **{medications[i]}** and **{medications[clean_meds.index(med2)]}**:\n"
-                    f"{CLINICAL_REFERENCE_DATABASE[med1]['interactions'][med2]}"
-                )
-            # Check med2 -> med1 interactions
-            elif med2 in CLINICAL_REFERENCE_DATABASE and med1 in CLINICAL_REFERENCE_DATABASE[med2]["interactions"]:
-                interactions_found.append(
-                    f"[WARNING] **DANGEROUS INTERACTION DETECTED** between **{medications[clean_meds.index(med2)]}** and **{medications[i]}**:\n"
-                    f"{CLINICAL_REFERENCE_DATABASE[med2]['interactions'][med1]}"
-                )
-                
-    if interactions_found:
-        return "\n\n".join(interactions_found)
-    return "No known dangerous interactions found between active medications."
+    try:
+        if not medications or not isinstance(medications, list):
+            return "Error: medications must be a non-empty list of strings."
+            
+        clean_meds = [clean_drug_name(med) for med in medications]
+        interactions_found = []
+        
+        for i, med1 in enumerate(clean_meds):
+            for med2 in clean_meds[i+1:]:
+                # Check med1 -> med2 interactions
+                if med1 in CLINICAL_REFERENCE_DATABASE and med2 in CLINICAL_REFERENCE_DATABASE[med1]["interactions"]:
+                    interactions_found.append(
+                        f"[WARNING] **DANGEROUS INTERACTION DETECTED** between **{medications[i]}** and **{medications[clean_meds.index(med2)]}**:\n"
+                        f"{CLINICAL_REFERENCE_DATABASE[med1]['interactions'][med2]}"
+                    )
+                # Check med2 -> med1 interactions
+                elif med2 in CLINICAL_REFERENCE_DATABASE and med1 in CLINICAL_REFERENCE_DATABASE[med2]["interactions"]:
+                    interactions_found.append(
+                        f"[WARNING] **DANGEROUS INTERACTION DETECTED** between **{medications[clean_meds.index(med2)]}** and **{medications[i]}**:\n"
+                        f"{CLINICAL_REFERENCE_DATABASE[med2]['interactions'][med1]}"
+                    )
+                    
+        if interactions_found:
+            return "\n\n".join(interactions_found)
+        return "No known dangerous interactions found between active medications."
+    except Exception as e:
+        return f"Tool Execution Error (check_drug_interactions): {str(e)}"
 
 if __name__ == "__main__":
     # Test openFDA lookup

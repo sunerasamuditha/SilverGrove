@@ -1,5 +1,22 @@
 [
   {
+    "id": "alert_1780095839",
+    "timestamp": "2026-05-30T04:33:59.275928Z",
+    "resident_id": "martha_001",
+    "resident_name": "Martha Reynolds",
+    "severity": "WARNING",
+    "message": "Resident shows significant gait slowdown (-16.5%) and reduced sleep following initiation of Metoprolol. Clinical analysis indicates a potential adverse interaction between Metoprolol and Lisinopril causing orthostatic hypotension and increased fall risk.",
+    "actions": [
+      "Immediate physician review of Metoprolol/Lisinopril interaction",
+      "Perform orthostatic BP checks at next nursing round",
+      "Increase fall precautions",
+      "Advise resident to sit before standing",
+      "Ensure adequate hydration"
+    ],
+    "correlation": "Recent initiation of Metoprolol Succinate (4 days ago) correlates with 16.5% gait degradation and increased risk of orthostatic hypotension when combined with existing Lisinopril prescription.",
+    "acknowledged": false
+  },
+  {
     "id": "alert_1780090871",
     "timestamp": "2026-05-30T03:11:11.533811Z",
     "resident_id": "martha_001",
