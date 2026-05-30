@@ -6,6 +6,8 @@ let activeResidentId = null;
 let sseSource = null;
 let currentFilter = 'all';
 let allLoggedEvents = [];
+let vitalsPollingInterval = null;
+let isHealthCheckRunning = false;
 
 // Accumulated trajectory data from SSE events
 let liveTrajectory = {
@@ -196,30 +198,56 @@ async function selectResident(residentId) {
             medsList.appendChild(li);
         });
 
-        document.getElementById("vital-hr").innerText = v.telemetry.heart_rate_bpm;
-        document.getElementById("base-hr").innerText = v.baselines.heart_rate_bpm;
-        document.getElementById("vital-bp").innerText = `${v.telemetry.bp_systolic}/${v.telemetry.bp_diastolic}`;
-        document.getElementById("bp-deviation").innerText = `Baseline: ${v.baselines.bp_systolic}/${v.baselines.bp_diastolic}`;
-        document.getElementById("vital-gait").innerText = v.telemetry.gait_speed_ms;
-        document.getElementById("gait-deviation").innerText = `Baseline: ${v.baselines.gait_speed_ms} m/s`;
-        document.getElementById("vital-sleep").innerText = v.telemetry.sleep_hours;
-        document.getElementById("base-sleep").innerText = v.baselines.sleep_hours;
-        document.getElementById("vital-occupancy").innerText = v.telemetry.room_occupancy.replace('_', ' ').toUpperCase();
-
-        const bpCard = document.getElementById("card-bp");
-        const gaitCard = document.getElementById("card-gait");
-        bpCard.classList.remove("anomaly-alert");
-        gaitCard.classList.remove("anomaly-alert");
-
-        if (v.status === "ANOMALY_DETECTED") {
-            if (v.telemetry.bp_systolic >= 140 || v.telemetry.bp_systolic <= 100) bpCard.classList.add("anomaly-alert");
-            if (v.gait_change_percent <= -15.0) gaitCard.classList.add("anomaly-alert");
-        }
+        updateVitalsDOM(v);
+        startVitalsPolling();
     } catch (e) {
         console.error("Error fetching resident details:", e);
     }
 }
 
+function updateVitalsDOM(v) {
+    document.getElementById("vital-hr").innerText = v.telemetry.heart_rate_bpm;
+    document.getElementById("base-hr").innerText = v.baselines.heart_rate_bpm;
+    document.getElementById("vital-bp").innerText = `${v.telemetry.bp_systolic}/${v.telemetry.bp_diastolic}`;
+    document.getElementById("bp-deviation").innerText = `Baseline: ${v.baselines.bp_systolic}/${v.baselines.bp_diastolic}`;
+    document.getElementById("vital-gait").innerText = v.telemetry.gait_speed_ms;
+    document.getElementById("gait-deviation").innerText = `Baseline: ${v.baselines.gait_speed_ms} m/s`;
+    document.getElementById("vital-sleep").innerText = v.telemetry.sleep_hours;
+    document.getElementById("base-sleep").innerText = v.baselines.sleep_hours;
+    document.getElementById("vital-occupancy").innerText = v.telemetry.room_occupancy.replace('_', ' ').toUpperCase();
+
+    const bpCard = document.getElementById("card-bp");
+    const gaitCard = document.getElementById("card-gait");
+    bpCard.classList.remove("anomaly-alert");
+    gaitCard.classList.remove("anomaly-alert");
+
+    if (v.status === "ANOMALY_DETECTED") {
+        if (v.telemetry.bp_systolic >= 140 || v.telemetry.bp_systolic <= 100) bpCard.classList.add("anomaly-alert");
+        if (v.gait_change_percent <= -15.0) gaitCard.classList.add("anomaly-alert");
+    }
+}
+
+function startVitalsPolling() {
+    stopVitalsPolling();
+    vitalsPollingInterval = setInterval(async () => {
+        if (!activeResidentId || isHealthCheckRunning) return;
+        try {
+            const res = await fetch(getApiBaseUrl() + `/api/residents/${activeResidentId}`);
+            if (!res.ok) return;
+            const data = await res.json();
+            updateVitalsDOM(data.vitals);
+        } catch (e) {
+            console.error("Polling error:", e);
+        }
+    }, 2000);
+}
+
+function stopVitalsPolling() {
+    if (vitalsPollingInterval) {
+        clearInterval(vitalsPollingInterval);
+        vitalsPollingInterval = null;
+    }
+}
 // ============================================================
 // AGENT WORKSPACE
 // ============================================================
@@ -274,6 +302,9 @@ function triggerAgentCheck() {
     btn.disabled = true;
     btn.innerText = "Agents Running...";
 
+    isHealthCheckRunning = true;
+    stopVitalsPolling();
+
     // Reset everything
     resetAgentWorkspace();
     clearTerminalLogs();
@@ -321,6 +352,9 @@ function triggerAgentCheck() {
         btn.disabled = false;
         btn.innerText = "Run Multi-Agent Health Check";
         document.getElementById('terminal-status').textContent = 'silvergrove://complete';
+
+        isHealthCheckRunning = false;
+        startVitalsPolling();
 
         // Refresh alerts after completion
         initAlerts();

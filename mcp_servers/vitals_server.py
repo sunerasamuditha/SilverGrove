@@ -133,6 +133,17 @@ def load_residents():
     except Exception:
         return {}
 
+_FROZEN_VITALS = {}
+_LAST_GENERATED = {}
+
+def set_vitals_frozen(resident_id: str, freeze: bool):
+    if freeze:
+        if resident_id in _LAST_GENERATED:
+            _FROZEN_VITALS[resident_id] = _LAST_GENERATED[resident_id]
+    else:
+        if resident_id in _FROZEN_VITALS:
+            del _FROZEN_VITALS[resident_id]
+
 @mcp.tool()
 def get_resident_details(resident_id: str) -> dict:
     """Retrieve full details of a resident (name, age, active conditions, medications)."""
@@ -141,7 +152,12 @@ def get_resident_details(resident_id: str) -> dict:
 @mcp.tool()
 def get_resident_vitals(resident_id: str) -> dict:
     """Retrieve real-time camera-free vital signs and sensory telemetry from ambient radar sensors."""
-    vitals = _generate_live_telemetry(resident_id)
+    if resident_id in _FROZEN_VITALS:
+        vitals = _FROZEN_VITALS[resident_id]
+    else:
+        vitals = _generate_live_telemetry(resident_id)
+        _LAST_GENERATED[resident_id] = vitals
+
     if not vitals:
         return {"error": f"No vital telemetry available for resident {resident_id}."}
     

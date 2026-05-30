@@ -19,6 +19,7 @@ from tools.vitals_tools import get_resident_vitals, get_resident_details
 from tools.alert_tools import get_alerts_timeline, clear_alerts_timeline
 from tools.trace_events import TraceCollector
 from a2a.agent_cards import get_root_agent_card, get_all_agent_cards
+from mcp_servers.vitals_server import set_vitals_frozen
 
 # Initialize FastAPI App
 app = FastAPI(
@@ -102,9 +103,12 @@ def get_resident_fhir_bundle(resident_id: str):
 @app.post("/api/residents/{resident_id}/check")
 def trigger_agent_check(resident_id: str):
     try:
+        set_vitals_frozen(resident_id, True)
         trajectory = orchestrator.run_health_check(resident_id)
+        set_vitals_frozen(resident_id, False)
         return trajectory
     except Exception as e:
+        set_vitals_frozen(resident_id, False)
         raise HTTPException(status_code=500, detail=str(e))
 
 # Endpoint: Stream End-to-End Multi-Agent Health Check in Real-time
@@ -126,10 +130,12 @@ def stream_agent_check(resident_id: str):
         
         def run_check():
             try:
+                set_vitals_frozen(resident_id, True)
                 orchestrator.run_health_check(resident_id, collector)
             except Exception as e:
                 collector.log("ORCHESTRATOR", "ERROR", f"Fatal exception during multi-agent check: {str(e)}")
             finally:
+                set_vitals_frozen(resident_id, False)
                 loop.call_soon_threadsafe(queue.put_nowait, "DONE")
                 
         thread = threading.Thread(target=run_check)
