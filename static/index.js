@@ -671,6 +671,10 @@ document.getElementById('generate-pdf-btn')?.addEventListener('click', async () 
     const btn = document.getElementById('generate-pdf-btn'); 
     const origText = btn.innerHTML; 
     btn.innerHTML = 'Generating...'; 
+    
+    // Open a blank tab immediately to bypass browser popup blocker
+    const pdfTab = window.open('about:blank', '_blank');
+    
     try { 
         const res = await fetch(getApiBaseUrl() + '/api/reports/generate', { 
             method: 'POST', 
@@ -679,7 +683,6 @@ document.getElementById('generate-pdf-btn')?.addEventListener('click', async () 
         }); 
         const data = await res.json(); 
         if(data.status === 'success') { 
-            alert(data.message); 
             // Also attempt to open the URL if it contains one
             const urlMatch = data.message.match(/URL:\s*(.*)/);
             if(urlMatch && urlMatch[1]) {
@@ -687,12 +690,17 @@ document.getElementById('generate-pdf-btn')?.addEventListener('click', async () 
                 if(finalUrl.startsWith('/')) {
                     finalUrl = getApiBaseUrl() + finalUrl;
                 }
-                window.open(finalUrl, '_blank');
+                pdfTab.location.href = finalUrl;
+            } else {
+                pdfTab.close();
+                alert(data.message); 
             }
         } else { 
+            pdfTab.close();
             alert('Error: ' + data.detail); 
         } 
     } catch(e) { 
+        pdfTab.close();
         alert('Failed to generate PDF: ' + e); 
     } finally { 
         btn.innerHTML = origText; 
