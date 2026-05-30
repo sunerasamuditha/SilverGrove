@@ -22,12 +22,12 @@ Powered by the **Google Agent Development Kit (ADK)** and the **Agent-to-Agent (
 
 ##  Key Features
 
-*   ** Privacy-by-Design Ambient Telemetry**: camera-free ambient radar and RF sensors track gait speed, sleep quality, and daily vitals without invasive cameras, preserving senior dignity.
-*   ** Async Multi-Agent Consensus Pipeline**: Orchestrates specialized agents communicating asynchronously via a high-performance in-memory Event Bus for concurrent, multi-layered clinical evaluation.
-*   ** Automated Polypharmacy Correlation**: Integrates with live **openFDA** drug databases to instantly cross-reference gait and biometric anomalies against active prescriptions (e.g. beta-blockers like Metoprolol Succinate).
-*   ** Secure A2A Protocol Routing**: Packages consensus clinical summaries into cryptographically structured A2A Agent Cards, securely dispatching telemetry directly to Family and Physician gateways.
-*   ** HL7 FHIR Interoperability**: Generates standards-compliant FHIR R4 Observations tagged with strict LOINC codes and UCUM units to enable direct integration into enterprise Electronic Health Records (EHRs).
-*   ** Seamless Dynamic Clinical Reports**: Compiles instant, localized PDF clinical charts using hardened string-cleansing algorithms to protect against layout/encoding crashes.
+*    Privacy-by-Design Ambient Telemetry**: camera-free ambient radar and RF sensors track gait speed, sleep quality, and daily vitals without invasive cameras, preserving senior dignity.
+*    Async Multi-Agent Consensus Pipeline**: Orchestrates specialized agents communicating asynchronously via a high-performance in-memory Event Bus for concurrent, multi-layered clinical evaluation.
+*    Automated Polypharmacy Correlation**: Integrates with live **openFDA** drug databases to instantly cross-reference gait and biometric anomalies against active prescriptions (e.g. beta-blockers like Metoprolol Succinate).
+*    Secure A2A Protocol Routing**: Packages consensus clinical summaries into cryptographically structured A2A Agent Cards, securely dispatching telemetry directly to Family and Physician gateways.
+*    HL7 FHIR Interoperability**: Generates standards-compliant FHIR R4 Observations tagged with strict LOINC codes and UCUM units to enable direct integration into enterprise Electronic Health Records (EHRs).
+*    Seamless Dynamic Clinical Reports**: Compiles instant, localized PDF clinical charts using hardened string-cleansing algorithms to protect against layout/encoding crashes.
 
 ---
 
@@ -77,7 +77,7 @@ graph TD
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 *   **Core Orchestration**: Google Agent Development Kit (ADK), Google GenAI SDK (Gemini 3.1 Flash Lite / Pro)
 *   **Protocol Standard**: Agent-to-Agent (A2A) specifications for Agent Cards
