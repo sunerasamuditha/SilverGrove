@@ -50,14 +50,14 @@ def generate_local_pdf(resident_id: str) -> str:
             # Format row
             line = f"[{time_str}] {severity} - {msg}"
             pdf.multi_cell(0, 8, txt=sanitize_line(line))
+            pdf.ln(2)
             
             # Add correlation if exists
             correlation = a.get('correlation')
             if correlation:
                 corr_line = f"  -> Correlation: {correlation}"
                 pdf.multi_cell(0, 8, txt=sanitize_line(corr_line))
-                
-            pdf.ln(2)
+                pdf.ln(2)
             
         # Ensure reports directory exists
         reports_dir = os.path.join(os.getcwd(), "static", "reports")
