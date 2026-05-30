@@ -11,10 +11,11 @@
       font-family: 'Inter', -apple-system, sans-serif;
       background-color: var(--bg-clinical);
       color: var(--color-text-primary);
-      margin: 0;
-      padding: 0;
       min-height: 100vh;
-      overflow-x: hidden;
+      padding: 16px;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
     }
 
     .glass-header {
@@ -82,6 +83,8 @@
       display: flex;
       flex-direction: column;
       gap: 20px;
+      flex: 1;
+      overflow-y: auto;
     }
 
     .page-title-section {
@@ -316,35 +319,36 @@
   </style>
 </head>
 <body>
+  <div class="portal-container">
+    <!-- HEADER -->
+    <header class="main-header glass-panel">
+      <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+          <div class="logo-area">
+              <div class="logo-icon" style="display: flex; align-items: center; justify-content: center;">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                  </svg>
+              </div>
+              <div class="logo-text">
+                  <h1 style="margin: 0;">SilverGrove</h1>
+                  <p style="margin: 0; font-size: 10px; color: var(--color-text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;">Ambient Assisted Living Multi-Agent System</p>
+              </div>
+          </div>
 
-  <header class="main-header glass-panel" style="margin: 0; border-radius: 0; border-left: none; border-right: none; border-top: none;">
-    <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-        <div class="logo-area">
-            <div class="logo-icon" style="display: flex; align-items: center; justify-content: center;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                </svg>
-            </div>
-            <div class="logo-text">
-                <h1 style="margin: 0;">SilverGrove</h1>
-                <p style="margin: 0; font-size: 10px; color: var(--color-text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;">Ambient Assisted Living Multi-Agent System</p>
-            </div>
-        </div>
-
-        <nav class="nav-links">
-            <a href="index.html">Command Center</a>
-            <a href="a2a-explorer.html" class="active">A2A Explorer</a>
-            <a href="infographic.html">Scenario Infographic</a>
-        </nav>
-    </div>
-
-    <div class="status-bar">
-      <div class="backend-status" style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; background: var(--panel-inner); border: 1px solid var(--border-color); padding: 4px 10px; border-radius: 4px; color: var(--color-text-secondary);">
-        <div id="statusDot" class="status-indicator" style="width: 6px; height: 6px; border-radius: 50%; background: #ef4444;"></div>
-        <span id="statusText">Disconnected</span>
+          <nav class="nav-links">
+              <a href="index.html">Command Center</a>
+              <a href="a2a-explorer.html" class="active">A2A Explorer</a>
+              <a href="infographic.html">Scenario Infographic</a>
+          </nav>
       </div>
-    </div>
-  </header>
+
+      <div class="status-bar">
+        <div class="connection-badge" id="conn-badge">
+          <div class="connection-dot" id="statusDot" style="background-color: #ef4444;"></div>
+          <span id="statusText">Disconnected</span>
+        </div>
+      </div>
+    </header>
 
   <div class="explorer-container">
     <div class="page-title-section">
@@ -514,5 +518,6 @@
     checkBackendConnection();
     setInterval(checkBackendConnection, 5000);
   </script>
+  </div>
 </body>
 </html>
