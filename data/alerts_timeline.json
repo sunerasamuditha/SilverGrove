@@ -1,5 +1,22 @@
 [
   {
+    "id": "alert_1780090871",
+    "timestamp": "2026-05-30T03:11:11.533811Z",
+    "resident_id": "martha_001",
+    "resident_name": "Martha Reynolds",
+    "severity": "WARNING",
+    "message": "Alert: Clinical anomaly detected for Martha Reynolds (martha_001). Observed 16.5% gait slowdown, elevated blood pressure (144/87), and sleep disruption correlating with recent Metoprolol prescription and potential interaction with Lisinopril. Resident is at increased risk of falls.",
+    "actions": [
+      "Immediate wellness check-in by care staff",
+      "Advise resident to rise slowly from sitting/lying positions",
+      "Maintain consistent hydration",
+      "Request Physician review of Metoprolol/Lisinopril interaction",
+      "Daily monitoring of BP and gait speed"
+    ],
+    "correlation": "Recent initiation of Metoprolol Succinate (4 days ago) may be causing orthostatic hypotension and fatigue, exacerbated by potential drug-drug interaction with existing Lisinopril. Observed -16.5% gait slowdown and reduced sleep.",
+    "acknowledged": false
+  },
+  {
     "id": "alert_1780054121",
     "timestamp": "2026-05-29T16:58:41.784198Z",
     "resident_id": "clara_003",

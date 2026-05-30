@@ -394,14 +394,6 @@ function processAgentEvent(evt) {
         }
     }
 
-    // Handle FALLBACK events (when LLM retries are exhausted)
-    if (type === 'FALLBACK') {
-        if (agent === 'SENSORY_GUARDIAN') setAgentStatus('sensory', 'Fallback Active', 'status-running');
-        if (agent === 'MEDICAL_COMPLIANCE') setAgentStatus('compliance', 'Fallback Active', 'status-running');
-        if (agent === 'COGNITIVE_COMPANION') setAgentStatus('companion', 'Fallback Active', 'status-running');
-        if (agent === 'CARE_COORDINATOR') setAgentStatus('coordinator', 'Fallback Active', 'status-running');
-    }
-
     // Handle TOOL_CALL events
     if (type === 'TOOL_CALL') {
         if (agent === 'SENSORY_GUARDIAN') setAgentStatus('sensory', 'Calling Tools', 'status-running');
@@ -409,12 +401,25 @@ function processAgentEvent(evt) {
         if (agent === 'CARE_COORDINATOR') setAgentStatus('coordinator', 'Calling Tools', 'status-running');
     }
 
-    // Handle ERROR events
+    // Handle ERROR events -- display transparent error state with details
     if (type === 'ERROR') {
-        if (agent === 'SENSORY_GUARDIAN' || evt.message.includes('Sensory')) setAgentStatus('sensory', 'Error', 'status-failed');
-        if (agent === 'MEDICAL_COMPLIANCE' || evt.message.includes('Medical')) setAgentStatus('compliance', 'Error', 'status-failed');
-        if (agent === 'COGNITIVE_COMPANION' || evt.message.includes('Companion')) setAgentStatus('companion', 'Error', 'status-failed');
-        if (agent === 'CARE_COORDINATOR' || evt.message.includes('Coordinator')) setAgentStatus('coordinator', 'Error', 'status-failed');
+        const errorDetail = `<p style="color:var(--color-danger);font-weight:600;font-size:12px;">[ERROR] ${escapeHtml(evt.message)}</p>`;
+        if (agent === 'SENSORY_GUARDIAN' || evt.message.includes('Sensory')) {
+            setAgentStatus('sensory', 'Error', 'status-failed');
+            setAgentOutput('sensory', errorDetail);
+        }
+        if (agent === 'MEDICAL_COMPLIANCE' || evt.message.includes('Medical')) {
+            setAgentStatus('compliance', 'Error', 'status-failed');
+            setAgentOutput('compliance', errorDetail);
+        }
+        if (agent === 'COGNITIVE_COMPANION' || evt.message.includes('Companion')) {
+            setAgentStatus('companion', 'Error', 'status-failed');
+            setAgentOutput('companion', errorDetail);
+        }
+        if (agent === 'CARE_COORDINATOR' || evt.message.includes('Coordinator')) {
+            setAgentStatus('coordinator', 'Error', 'status-failed');
+            setAgentOutput('coordinator', errorDetail);
+        }
     }
 }
 
