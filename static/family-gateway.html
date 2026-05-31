@@ -15,11 +15,13 @@
 
         .app-container {
             max-width: 1000px;
-            margin: 32px auto;
+            margin: 16px auto;
             padding: 0 16px;
             display: grid;
             grid-template-columns: 1fr 350px;
             gap: 24px;
+            height: calc(100vh - 160px);
+            min-height: 0;
         }
 
         .inbox-panel {
@@ -31,6 +33,17 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #alerts-container {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-right: 6px;
         }
 
         .panel-title {
@@ -107,7 +120,8 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            height: fit-content;
+            height: 100%;
+            overflow-y: auto;
         }
 
         .emergency-btn {

@@ -36,3 +36,4 @@ Thumbs.db
 *.log
 *.sqlite
 data/db.sqlite3
+data/alerts_timeline.json
