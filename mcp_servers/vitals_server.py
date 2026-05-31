@@ -10,6 +10,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from services.gcp_service import get_resident_profile_db
 
 # Initialize MCP Server
+# This module serves a dual purpose:
+# 1. Standalone MCP Server: Run via `python vitals_server.py` to expose tools over
+#    the Model Context Protocol (stdio transport) for external agent discovery.
+# 2. Direct Import: ADK agents in the local pipeline import these same functions
+#    directly (via tools/vitals_tools.py) for zero-latency in-process tool calls.
 mcp = FastMCP("SilverGroveVitalsServer")
 
 # Path to residents database

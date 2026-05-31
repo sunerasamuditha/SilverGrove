@@ -41,7 +41,7 @@ def listen_for_family_alerts():
                         if alert_id not in seen_alerts:
                             # Process new alert
                             seen_alerts.add(alert_id)
-                            print(f"[{datetime.now().strftime('%H:%M:%S')}] 🚨 NEW A2A ALERT RECEIVED 🚨")
+                            print(f"[{datetime.now().strftime('%H:%M:%S')}] [ALERT] NEW A2A ALERT RECEIVED")
                             print(f"Resident: {alert.get('resident_name', 'Unknown')} ({alert.get('resident_id', 'Unknown')})")
                             print(f"Severity: {alert.get('severity', 'UNKNOWN')}")
                             print(f"Message:  {alert.get('message', '')}")

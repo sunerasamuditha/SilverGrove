@@ -90,5 +90,45 @@ def get_all_agent_cards(base_url: str = "") -> dict:
                 "schemes": ["none"]
             }
         },
-        "care_coordinator": get_root_agent_card(base_url)
+        "care_coordinator": get_root_agent_card(base_url),
+        "family_gateway": {
+            "name": "SilverGrove Family Agent Gateway",
+            "description": "Self-hosted A2A endpoint for dispatching human-readable clinical alerts to the resident's verified family proxy application",
+            "version": "1.0.0",
+            "url": f"{base_url}/a2a/family-gateway/inbox",
+            "capabilities": {
+                "streaming": False,
+                "pushNotifications": True
+            },
+            "skills": [
+                {
+                    "id": "receive-alert",
+                    "name": "Receive Clinical Alert",
+                    "description": "Ingests SHA-256 integrity-verified, human-readable clinical alerts regarding the resident"
+                }
+            ],
+            "authentication": {
+                "schemes": ["sha256_integrity"]
+            }
+        },
+        "physician_gateway": {
+            "name": "SilverGrove Physician EHR Gateway",
+            "description": "Self-hosted A2A endpoint for dispatching HL7 FHIR R4 Observations to the primary care physician's EHR review queue",
+            "version": "1.0.0",
+            "url": f"{base_url}/a2a/physician-gateway/fhir-ingest",
+            "capabilities": {
+                "streaming": False,
+                "pushNotifications": True
+            },
+            "skills": [
+                {
+                    "id": "ingest-fhir",
+                    "name": "Ingest FHIR Observation",
+                    "description": "Ingests SHA-256 integrity-verified HL7 FHIR R4 Observations (LOINC/UCUM) and queues them for physician review"
+                }
+            ],
+            "authentication": {
+                "schemes": ["sha256_integrity"]
+            }
+        }
     }

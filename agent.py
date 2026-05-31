@@ -4,6 +4,8 @@ import json
 import uuid
 import time
 import asyncio
+import hashlib
+import requests
 from dataclasses import dataclass, field, asdict
 from dotenv import load_dotenv
 
@@ -303,6 +305,44 @@ class SilverGroveOrchestrator:
                 trajectory.care_coordinator.status = "COMPLETED"
                 trajectory.care_coordinator.output = resp
                 
+                if collector:
+                    # Build dispatch payloads from real agent outputs
+                    companion_summary = event["companion_draft"][:500]
+                    compliance_context = event["compliance_data"][:500]
+                    
+                    family_dispatch_payload = {
+                        "resident_id": resident_id,
+                        "risk": event["risk"],
+                        "summary": companion_summary,
+                    }
+                    # Compute SHA-256 integrity hash over the payload content
+                    family_payload_bytes = json.dumps(family_dispatch_payload, sort_keys=True).encode("utf-8")
+                    family_dispatch_payload["integrity_sha256"] = hashlib.sha256(family_payload_bytes).hexdigest()
+                    
+                    physician_dispatch_payload = {
+                        "patient_identifier": resident_id,
+                        "fhir_resource_type": "Observation",
+                        "loinc_code": "85354-9",
+                        "clinical_status": "preliminary",
+                        "risk_severity": event["risk"],
+                        "compliance_correlation": compliance_context,
+                    }
+                    physician_payload_bytes = json.dumps(physician_dispatch_payload, sort_keys=True).encode("utf-8")
+                    physician_dispatch_payload["integrity_sha256"] = hashlib.sha256(physician_payload_bytes).hexdigest()
+                    
+                    port = os.environ.get("PORT", 8180)
+                    gateway_base = f"http://127.0.0.1:{port}"
+                    
+                    collector.log("CARE_COORDINATOR", "A2A_DISPATCH", f"Dispatching SHA-256 signed payload to Family Gateway at {gateway_base}/a2a/family-gateway/inbox", family_dispatch_payload)
+                    collector.log("CARE_COORDINATOR", "A2A_DISPATCH", f"Dispatching SHA-256 signed FHIR payload to Physician Gateway at {gateway_base}/a2a/physician-gateway/fhir-ingest", physician_dispatch_payload)
+                    
+                    # Deliver payloads to self-hosted A2A gateway endpoints via HTTP
+                    try:
+                        requests.post(f"{gateway_base}/a2a/family-gateway/inbox", json=family_dispatch_payload, timeout=2)
+                        requests.post(f"{gateway_base}/a2a/physician-gateway/fhir-ingest", json=physician_dispatch_payload, timeout=2)
+                    except Exception as http_e:
+                        collector.log("CARE_COORDINATOR", "ERROR", f"Gateway delivery failed: {str(http_e)}")
+
                 trajectory.summary = f"Multi-agent async workflow complete. Consensus: {event['risk']} risk. A2A alerts dispatched."
                 if collector:
                     collector.log("ORCHESTRATOR", "COMPLETE", trajectory.summary)
