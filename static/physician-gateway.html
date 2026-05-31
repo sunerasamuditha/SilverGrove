@@ -277,7 +277,7 @@
                             </div>
                         </div>
                         <div style="font-size: 0.85rem; color: #475569;">
-                            <strong>Cryptographic Signature:</strong> <span style="font-family: monospace;">${msg.cryptographic_attestation}</span>
+                            <strong>Integrity Hash:</strong> <span style="font-family: monospace;">${msg.integrity_sha256 ? msg.integrity_sha256.substring(0, 24) + '...' : 'N/A'}</span>
                         </div>
                         <pre class="json-payload">${JSON.stringify(msg, null, 2)}</pre>
                     `;

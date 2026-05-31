@@ -280,17 +280,23 @@
                     
                     const time = new Date(msg.received_at).toLocaleTimeString();
                     
+                    // Render the companion summary as clean readable text
+                    const summaryText = (msg.summary || "No summary available.")
+                        .replace(/#{1,4}\s*/g, '')
+                        .replace(/\*\*/g, '')
+                        .replace(/\n/g, '<br>');
+                    
                     card.innerHTML = `
                         <div class="alert-header">
-                            <span class="alert-badge">${msg.risk_level}</span>
+                            <span class="alert-badge">${msg.risk || 'INFO'}</span>
                             <span class="alert-time">${time}</span>
                         </div>
                         <div class="alert-body">
                             <strong>Resident ID:</strong> ${msg.resident_id}<br>
-                            ${msg.clinical_summary}
+                            ${summaryText}
                         </div>
-                        <div style="font-size: 0.7rem; color: #94a3b8; text-align: right; margin-top: 8px;">
-                            Signature: ${msg.signature}
+                        <div style="font-size: 0.7rem; color: #94a3b8; text-align: right; margin-top: 8px; font-family: monospace;">
+                            SHA-256: ${msg.integrity_sha256 ? msg.integrity_sha256.substring(0, 16) + '...' : 'N/A'}
                         </div>
                     `;
                     container.appendChild(card);

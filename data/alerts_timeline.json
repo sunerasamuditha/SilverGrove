@@ -1,180 +1,33 @@
 [
   {
-    "id": "alert_3a82707a07a7",
-    "timestamp": "2026-05-31T04:56:14.204416Z",
+    "id": "alert_9f26c2331bd2",
+    "timestamp": "2026-05-31T06:23:29.003162Z",
     "resident_id": "clara_003",
     "resident_name": "Clara Higgins",
     "severity": "WARNING",
-    "message": "Clara Higgins (clara_003) is experiencing a high-risk clinical event involving significant gait reduction and hypotension likely secondary to recent medication changes. Care staff must prioritize safety to prevent fall risk.",
+    "message": "Clara Higgins (clara_003) is experiencing gait freezing and symptomatic hypotension. Clinical indicators suggest a negative correlation with recent Parkinson's medication initiation. Severity escalated to WARNING.",
     "actions": [
-      "Immediate physical check-in",
-      "Ensure resident remains seated/lying down",
-      "Monitor blood pressure",
-      "Request immediate physician review of Carbidopa-Levodopa dosage"
+      "Immediate physical assessment",
+      "Escort resident to sit down",
+      "Monitor blood pressure hourly",
+      "Consult PCP regarding Carbidopa-Levodopa and Midodrine adjustment",
+      "Update family on medication-related dizziness"
     ],
-    "correlation": "Recent initiation of Carbidopa-Levodopa (2026-05-24) is strongly correlated with observed 14.4% drop in systolic blood pressure (101/58 mmHg) and 24.1% reduction in gait speed, indicating orthostatic hypotension.",
+    "correlation": "25.9% decline in gait speed and systolic hypotension (95/59 mmHg) correlate with recent initiation of Carbidopa-Levodopa for Parkinson's Disease. Potential interaction with existing Midodrine prescription.",
     "acknowledged": false
   },
   {
-    "id": "escalation_b0e70a59dfc5",
-    "timestamp": "2026-05-31T04:56:03.456176Z",
+    "id": "escalation_99f24febfcb1",
+    "timestamp": "2026-05-31T06:23:21.165644Z",
     "resident_id": "clara_003",
     "resident_name": "Clara Higgins",
     "severity": "CRITICAL",
-    "message": "HUMAN ESCALATION REQUESTED: The resident is at high risk of a fall due to significant blood pressure drops and gait instability related to new medication. Immediate clinical intervention and physical assistance are required.",
+    "message": "HUMAN ESCALATION REQUESTED: Resident Clara Higgins (clara_003) is experiencing a high-risk decline in mobility (gait freezing) and significant systolic hypotension (95/59 mmHg) following the initiation of new medication. Immediate clinical review is required due to high fall risk.",
     "actions": [
       "Immediate human check-in required",
       "Review recent conversation logs"
     ],
     "correlation": "Triggered via Cognitive Companion interaction",
-    "acknowledged": false
-  },
-  {
-    "id": "alert_64760a5492d6",
-    "timestamp": "2026-05-31T04:49:12.034661Z",
-    "resident_id": "james_004",
-    "resident_name": "James Sterling",
-    "severity": "CRITICAL",
-    "message": "Resident James Sterling (james_004) is experiencing a CRITICAL health decline characterized by significant gait instability and elevated heart rate following the introduction of Oxycodone HCl. Immediate intervention is required to assess fall risk and adjust medication protocol.",
-    "actions": [
-      "Immediate physical check-in",
-      "Perform fall-risk assessment",
-      "Suspend further Oxycodone doses",
-      "Notify primary physician",
-      "Monitor vitals every hour",
-      "Maintain fall precautions"
-    ],
-    "correlation": "Strong correlation between the initiation of Oxycodone HCl on 2026-05-25 and a -45.7% decline in gait speed and elevated heart rate.",
-    "acknowledged": false
-  },
-  {
-    "id": "escalation_0268de4eccd9",
-    "timestamp": "2026-05-31T04:49:00.854324Z",
-    "resident_id": "james_004",
-    "resident_name": "James Sterling",
-    "severity": "CRITICAL",
-    "message": "HUMAN ESCALATION REQUESTED: Resident is at high risk for falls due to recent Oxycodone initiation, showing a significant decline in gait speed and increased heart rate. Requires immediate assistance for all mobility tasks.",
-    "actions": [
-      "Immediate human check-in required",
-      "Review recent conversation logs"
-    ],
-    "correlation": "Triggered via Cognitive Companion interaction",
-    "acknowledged": false
-  },
-  {
-    "id": "alert_75a19f9c8642",
-    "timestamp": "2026-05-31T00:53:45.328623Z",
-    "resident_id": "martha_001",
-    "resident_name": "Martha Reynolds",
-    "severity": "ADVISORY",
-    "message": "Mild drift in health status observed. Martha exhibits 15.3% reduction in gait speed and sleep disturbances following recent initiation of Metoprolol. Current advisory status initiated for wellness monitoring.",
-    "actions": [
-      "Increase monitoring of blood pressure",
-      "Schedule physical therapy gait assessment",
-      "Review Metoprolol dosage with physician",
-      "Ensure hydration and slow transitions from sitting to standing"
-    ],
-    "correlation": "Recent initiation of Metoprolol Succinate (2026-05-23) correlates with observed fatigue, reduced gait speed, and potential orthostatic hypotension.",
-    "acknowledged": false
-  },
-  {
-    "id": "alert_0180b000820e",
-    "timestamp": "2026-05-30T13:28:08.580499Z",
-    "resident_id": "martha_001",
-    "resident_name": "Martha Reynolds",
-    "severity": "ADVISORY",
-    "message": "Moderate health advisory for Martha Reynolds. Observed gait speed decline and increased fall risk following initiation of Metoprolol Succinate. Resident requires close monitoring and slow postural transitions.",
-    "actions": [
-      "Immediate physical check-in",
-      "Assist resident with slow transitions to avoid dizziness",
-      "Monitor blood pressure before/after medication",
-      "Request PCP review of Metoprolol dosage"
-    ],
-    "correlation": "Introduction of Metoprolol Succinate on May 23, 2026, correlates with observed fatigue, dizziness, and decreased gait speed due to potential orthostatic hypotension.",
-    "acknowledged": false
-  },
-  {
-    "id": "alert_1780095839",
-    "timestamp": "2026-05-30T04:33:59.275928Z",
-    "resident_id": "martha_001",
-    "resident_name": "Martha Reynolds",
-    "severity": "WARNING",
-    "message": "Resident shows significant gait slowdown (-16.5%) and reduced sleep following initiation of Metoprolol. Clinical analysis indicates a potential adverse interaction between Metoprolol and Lisinopril causing orthostatic hypotension and increased fall risk.",
-    "actions": [
-      "Immediate physician review of Metoprolol/Lisinopril interaction",
-      "Perform orthostatic BP checks at next nursing round",
-      "Increase fall precautions",
-      "Advise resident to sit before standing",
-      "Ensure adequate hydration"
-    ],
-    "correlation": "Recent initiation of Metoprolol Succinate (4 days ago) correlates with 16.5% gait degradation and increased risk of orthostatic hypotension when combined with existing Lisinopril prescription.",
-    "acknowledged": false
-  },
-  {
-    "id": "alert_1780090871",
-    "timestamp": "2026-05-30T03:11:11.533811Z",
-    "resident_id": "martha_001",
-    "resident_name": "Martha Reynolds",
-    "severity": "WARNING",
-    "message": "Alert: Clinical anomaly detected for Martha Reynolds (martha_001). Observed 16.5% gait slowdown, elevated blood pressure (144/87), and sleep disruption correlating with recent Metoprolol prescription and potential interaction with Lisinopril. Resident is at increased risk of falls.",
-    "actions": [
-      "Immediate wellness check-in by care staff",
-      "Advise resident to rise slowly from sitting/lying positions",
-      "Maintain consistent hydration",
-      "Request Physician review of Metoprolol/Lisinopril interaction",
-      "Daily monitoring of BP and gait speed"
-    ],
-    "correlation": "Recent initiation of Metoprolol Succinate (4 days ago) may be causing orthostatic hypotension and fatigue, exacerbated by potential drug-drug interaction with existing Lisinopril. Observed -16.5% gait slowdown and reduced sleep.",
-    "acknowledged": false
-  },
-  {
-    "id": "alert_1780054121",
-    "timestamp": "2026-05-29T16:58:41.784198Z",
-    "resident_id": "clara_003",
-    "resident_name": "Clara Higgins",
-    "severity": "WARNING",
-    "message": "Resident experiencing significant gait slowdown and hypotensive vital readings. Correlation analysis suggests symptoms are linked to recent Carbidopa-Levodopa initiation. High risk for falls; intervention required.",
-    "actions": [
-      "Immediate caregiver wellness check",
-      "Perform orthostatic vitals assessment (supine/sitting/standing)",
-      "Monitor for gait freezing/falls",
-      "Hydrate",
-      "Sit for 60 seconds before standing",
-      "Escalate to PCP for medication review of Carbidopa-Levodopa"
-    ],
-    "correlation": "Recent initiation of Carbidopa-Levodopa (2026-05-24) correlates with observed symptomatic hypotension (98/60 mmHg) and gait degradation (-27.6% speed). No interaction with Midodrine detected.",
-    "acknowledged": false
-  },
-  {
-    "id": "alert_1780050352",
-    "timestamp": "2026-05-29T15:55:52.323686Z",
-    "resident_id": "martha_001",
-    "resident_name": "Martha Reynolds",
-    "severity": "WARNING",
-    "message": "Significant gait velocity degradation (15.3% slowdown over 5 days) and elevated blood pressure detected for Martha Reynolds. Symptoms correlate with the recent initiation of Metoprolol Succinate and potential interaction with Lisinopril. Resident is at increased risk for falls.",
-    "actions": [
-      "Immediate clinical nursing assessment of orthostatic vitals",
-      "Ensure resident transition from sit-to-stand is slow",
-      "Monitor for dizziness/fatigue",
-      "Schedule physician review of Metoprolol/Lisinopril dosage",
-      "Increase hydration monitoring"
-    ],
-    "correlation": "15.3% gait degradation and elevated BP (142/88 mmHg) correlate with recent (May 23) initiation of Metoprolol Succinate; interaction risk between Metoprolol and Lisinopril identified.",
-    "acknowledged": false
-  },
-  {
-    "id": "alert_1779887644",
-    "timestamp": "2026-05-27T18:44:04.297358Z",
-    "resident_id": "arthur_002",
-    "resident_name": "Arthur Pendelton",
-    "severity": "WARNING",
-    "message": "Mild changes in vital signs and gait detected, prompting a companion check-in regarding potential dizziness and safety advice.",
-    "actions": [
-      "Ask about dizziness",
-      "Advise resident to stand slowly",
-      "Advise resident to drink water"
-    ],
-    "correlation": null,
     "acknowledged": false
   }
 ]
