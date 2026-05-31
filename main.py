@@ -3,6 +3,7 @@ import sys
 import json
 import uuid
 import asyncio
+import datetime
 import threading
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
@@ -168,6 +169,31 @@ def get_agent_card(agent_name: str):
         return cards[agent_name]
     raise HTTPException(status_code=404, detail=f"Agent card {agent_name} not found.")
 
+# A2A Gateway In-Memory Receive Queues (persisted per container lifecycle)
+family_inbox = []
+physician_inbox = []
+
+@app.post("/a2a/family-gateway/inbox")
+def receive_family_dispatch(payload: dict):
+    payload["received_at"] = datetime.datetime.now().isoformat()
+    family_inbox.insert(0, payload)
+    return {"status": "success"}
+
+@app.get("/api/family/messages")
+def get_family_messages():
+    return family_inbox
+
+@app.post("/a2a/physician-gateway/fhir-ingest")
+def receive_physician_dispatch(payload: dict):
+    payload["received_at"] = datetime.datetime.now().isoformat()
+    physician_inbox.insert(0, payload)
+    return {"status": "success"}
+
+@app.get("/api/physician/inbox")
+def get_physician_messages():
+    return physician_inbox
+
+
 # Endpoint: Retrieve Active A2A Alerts Timeline
 @app.get("/api/alerts")
 def get_alerts():
@@ -177,7 +203,9 @@ def get_alerts():
 @app.post("/api/alerts/clear")
 def clear_alerts():
     clear_alerts_timeline()
-    return {"status": "success", "message": "Alert timeline cleared successfully."}
+    family_inbox.clear()
+    physician_inbox.clear()
+    return {"status": "success", "message": "Alert timeline and gateway inboxes cleared successfully."}
 
 class ReportRequest(BaseModel):
     resident_id: str

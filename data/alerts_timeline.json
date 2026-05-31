@@ -1,5 +1,83 @@
 [
   {
+    "id": "alert_3a82707a07a7",
+    "timestamp": "2026-05-31T04:56:14.204416Z",
+    "resident_id": "clara_003",
+    "resident_name": "Clara Higgins",
+    "severity": "WARNING",
+    "message": "Clara Higgins (clara_003) is experiencing a high-risk clinical event involving significant gait reduction and hypotension likely secondary to recent medication changes. Care staff must prioritize safety to prevent fall risk.",
+    "actions": [
+      "Immediate physical check-in",
+      "Ensure resident remains seated/lying down",
+      "Monitor blood pressure",
+      "Request immediate physician review of Carbidopa-Levodopa dosage"
+    ],
+    "correlation": "Recent initiation of Carbidopa-Levodopa (2026-05-24) is strongly correlated with observed 14.4% drop in systolic blood pressure (101/58 mmHg) and 24.1% reduction in gait speed, indicating orthostatic hypotension.",
+    "acknowledged": false
+  },
+  {
+    "id": "escalation_b0e70a59dfc5",
+    "timestamp": "2026-05-31T04:56:03.456176Z",
+    "resident_id": "clara_003",
+    "resident_name": "Clara Higgins",
+    "severity": "CRITICAL",
+    "message": "HUMAN ESCALATION REQUESTED: The resident is at high risk of a fall due to significant blood pressure drops and gait instability related to new medication. Immediate clinical intervention and physical assistance are required.",
+    "actions": [
+      "Immediate human check-in required",
+      "Review recent conversation logs"
+    ],
+    "correlation": "Triggered via Cognitive Companion interaction",
+    "acknowledged": false
+  },
+  {
+    "id": "alert_64760a5492d6",
+    "timestamp": "2026-05-31T04:49:12.034661Z",
+    "resident_id": "james_004",
+    "resident_name": "James Sterling",
+    "severity": "CRITICAL",
+    "message": "Resident James Sterling (james_004) is experiencing a CRITICAL health decline characterized by significant gait instability and elevated heart rate following the introduction of Oxycodone HCl. Immediate intervention is required to assess fall risk and adjust medication protocol.",
+    "actions": [
+      "Immediate physical check-in",
+      "Perform fall-risk assessment",
+      "Suspend further Oxycodone doses",
+      "Notify primary physician",
+      "Monitor vitals every hour",
+      "Maintain fall precautions"
+    ],
+    "correlation": "Strong correlation between the initiation of Oxycodone HCl on 2026-05-25 and a -45.7% decline in gait speed and elevated heart rate.",
+    "acknowledged": false
+  },
+  {
+    "id": "escalation_0268de4eccd9",
+    "timestamp": "2026-05-31T04:49:00.854324Z",
+    "resident_id": "james_004",
+    "resident_name": "James Sterling",
+    "severity": "CRITICAL",
+    "message": "HUMAN ESCALATION REQUESTED: Resident is at high risk for falls due to recent Oxycodone initiation, showing a significant decline in gait speed and increased heart rate. Requires immediate assistance for all mobility tasks.",
+    "actions": [
+      "Immediate human check-in required",
+      "Review recent conversation logs"
+    ],
+    "correlation": "Triggered via Cognitive Companion interaction",
+    "acknowledged": false
+  },
+  {
+    "id": "alert_75a19f9c8642",
+    "timestamp": "2026-05-31T00:53:45.328623Z",
+    "resident_id": "martha_001",
+    "resident_name": "Martha Reynolds",
+    "severity": "ADVISORY",
+    "message": "Mild drift in health status observed. Martha exhibits 15.3% reduction in gait speed and sleep disturbances following recent initiation of Metoprolol. Current advisory status initiated for wellness monitoring.",
+    "actions": [
+      "Increase monitoring of blood pressure",
+      "Schedule physical therapy gait assessment",
+      "Review Metoprolol dosage with physician",
+      "Ensure hydration and slow transitions from sitting to standing"
+    ],
+    "correlation": "Recent initiation of Metoprolol Succinate (2026-05-23) correlates with observed fatigue, reduced gait speed, and potential orthostatic hypotension.",
+    "acknowledged": false
+  },
+  {
     "id": "alert_0180b000820e",
     "timestamp": "2026-05-30T13:28:08.580499Z",
     "resident_id": "martha_001",

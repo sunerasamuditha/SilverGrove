@@ -44,7 +44,7 @@ def listen_for_physician_alerts():
                             
                             severity = alert.get("severity", "UNKNOWN")
                             if severity in ["WARNING", "CRITICAL"]:
-                                print(f"[{datetime.now().strftime('%H:%M:%S')}] ⚕️ CLINICAL ESCALATION RECEIVED ⚕️")
+                                print(f"[{datetime.now().strftime('%H:%M:%S')}] [ESCALATION] CLINICAL ESCALATION RECEIVED")
                                 print(f"Patient ID:  {alert.get('resident_id', 'Unknown')} ({alert.get('resident_name', 'Unknown')})")
                                 print(f"Severity:    {severity}")
                                 print(f"Findings:    {alert.get('message', '')}")
